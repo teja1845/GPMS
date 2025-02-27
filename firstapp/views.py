@@ -145,13 +145,13 @@ def login(request):
 
 # View to display Village Dashboard with Panchayat Employee Contacts
 def village_dashboard(request):
-    logging.debug("village_dashboard view called.")  # Debugging Start
+    # logging.debug("village_dashboard view called.")  # Debugging Start
 
     try:
-        logging.debug("Connecting to the database...")
+        # logging.debug("Connecting to the database...")
         conn = get_db_connection()
         cur = conn.cursor()
-        logging.debug("Database connection established.")
+        # logging.debug("Database connection established.")
 
         # Fetch Panchayat Employees data
         query = """
@@ -161,20 +161,20 @@ def village_dashboard(request):
         INNER JOIN citizen_mobile AS cm ON c.id = cm.citizen_id 
         GROUP BY pe.id, c.nm, pe.job_role;
         """
-        logging.debug(f"Executing query: {query}")
+        # logging.debug(f"Executing query: {query}")
         cur.execute(query)
         data = cur.fetchall()
-        logging.debug(f"Query executed successfully. Retrieved {len(data)} records.")
+        # logging.debug(f"Query executed successfully. Retrieved {len(data)} records.")
 
         cur.close()
         conn.close()
-        logging.debug("Database connection closed.")
+        # logging.debug("Database connection closed.")
 
         # Convert data into a list of dictionaries
         column_names = ["name", "mobile_number", "designation"]
         records = [dict(zip(column_names, row)) for row in data]
         
-        logging.debug(f"Processed records: {records}")  # Debugging Output
+        # logging.debug(f"Processed records: {records}")  # Debugging Output
 
     except psycopg2.Error as e:
         error_message = f"Database error: {e}"
@@ -182,7 +182,7 @@ def village_dashboard(request):
         messages.error(request, error_message)
         records = []
 
-    logging.debug("Rendering villagedashboard.html with records.")
+    # logging.debug("Rendering villagedashboard.html with records.")
     return render(request, "villagedashboard.html", {"records": records})
 
 def citizens(request):
@@ -190,3 +190,53 @@ def citizens(request):
 
 def panemp(request):
     return render(request,"panchayat_employees.html")
+
+
+# View to fetch citizen's taxes
+def citizenTaxes(request):
+    logging.debug("citizenTaxes view called.")
+
+    # **Check if the user is logged in (flag must be 1)**
+    if request.session.get("flag") != 1:
+        messages.error(request, "You must be logged in to view tax details.")
+        return redirect("login")  # Redirect to login page
+
+    # **Check if citizen_id exists in session**
+    citizen_id = request.session.get("id")
+    if not citizen_id:
+        messages.error(request, "Invalid session. Please log in again.")
+        return redirect("login")
+
+    try:
+        logging.debug(f"Fetching tax details for citizen_id: {citizen_id}")
+
+        conn = get_db_connection()
+        cur = conn.cursor()
+
+        # **Corrected Query using parameterized SQL**
+        query = """
+        SELECT tax_id, tax_type, yr, total_amount, due
+        FROM payment_taxes
+        WHERE citizen_id = %s ;
+        """
+        cur.execute(query, (citizen_id,))
+        data = cur.fetchall()
+
+        cur.close()
+        conn.close()
+
+        logging.debug(f"Query executed successfully. Retrieved {len(data)} records.")
+
+        # **Convert data into a list of dictionaries with S.No**
+        column_names = ["s_no", "tax_id", "tax_type", "year", "total_amount", "due"]
+        records = [{"s_no": idx + 1, **dict(zip(column_names[1:], row))} for idx, row in enumerate(data)]
+
+        logging.debug(f"Processed records: {records}")
+
+    except psycopg2.Error as e:
+        error_message = f"Database error: {e}"
+        logging.error(error_message)
+        messages.error(request, error_message)
+        records = []
+
+    return render(request, "citizenTaxes.html", {"records": records})
