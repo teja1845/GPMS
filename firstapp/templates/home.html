@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+{% extends "master.html" %}
+
+
+{% block title %}
+  Home page
+{% endblock %}
+
+
+{% block content %}
+<br><br>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>hello</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+</head>
+
+<style>
+  /* Custom styles */
+  body {
+    background-color: #e8e2e2; /* Set your desired background color here */
+  }
+</style>
+<body>
+
+
+  <div class="row">
+    <div class = "col-sm-4"></div>
+    <div class = "col-sm-4 container bg-white text-center">
+    <h3 class="login-challenge-title">LOGIN AS</h3> <br>
+    <li><a class="btn btn-primary" href="/adminLogin" role="button">Admin</a></li><br>
+    <li><a class="btn btn-primary" href="/teacherLogin" role="button">Teacher</a></li><br>
+    <li><a class="btn btn-primary" href="/studentLogin" role="button">Student</a></li>
+    <br><br>
+  </div>
+    <div class = "col-sm-4"></div>
+  </div>
+
+</body>
+
+
+
+
+{% endblock %}
+
+</html>
