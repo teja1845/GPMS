@@ -3,7 +3,7 @@ from django.template import loader
 from django.shortcuts import render,redirect
 import psycopg2
 from django.contrib import messages
-from django.contrib.auth.hashers import make_password
+from django.contrib.auth.hashers import make_password,check_password
 import logging
 
 # Configure logging
@@ -46,7 +46,6 @@ def signup(request):
 
         # Hash the password before storing it
         hashed_password = make_password(password)
-        print(len(hashed_password))
         logger.debug("Password hashed successfully.")
 
         try:
@@ -97,3 +96,47 @@ def signup(request):
 
     logger.debug("Rendering signup page.")
     return render(request, "signup.html")
+
+
+def login(request):
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+        user_type = request.POST.get("userType")  # Determines the table
+
+        try:
+            conn = get_db_connection()
+            cur = conn.cursor()
+
+            # Query to check if user exists in the selected user type table
+            check_user_query = f"SELECT id, passwd FROM {user_type} WHERE username = %s;"
+            cur.execute(check_user_query, (username,))
+            user_record = cur.fetchone()
+
+            cur.close()
+            conn.close()
+
+            if user_record:
+                stored_userid, stored_hashed_password = user_record
+
+                # Validate password
+                if check_password(password, stored_hashed_password):
+                    messages.success(request, f"Welcome {stored_userid}! You are logged in.")
+                    request.session["id"] = stored_userid  # Store session data
+                    request.session["user_type"] = user_type  # Store user type
+                    request.session['flag'] = 1
+                    return redirect(f"{user_type}")  # Redirect to dashboard/homepage
+
+                else:
+                    messages.error(request, "Invalid password. Please try again.")
+                    return redirect("login")
+            else:
+                messages.error(request, "User not found. Please check your details.")
+                return redirect("login")
+
+        except psycopg2.Error as e:
+            messages.error(request, f"Database error: {e}")
+            return redirect("login")
+
+    # GET Request: Show login page
+    return render(request, "login.html", {"messages": messages.get_messages(request)})
