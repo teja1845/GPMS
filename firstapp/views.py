@@ -185,4 +185,6 @@ def village_dashboard(request):
     logging.debug("Rendering villagedashboard.html with records.")
     return render(request, "villagedashboard.html", {"records": records})
 
+def citizens(request):
+    return render(request,"citizens.html")
 
