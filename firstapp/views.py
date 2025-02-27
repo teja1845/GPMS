@@ -1,6 +1,7 @@
-from django.http import HttpResponse
+from django.http import HttpResponse,HttpRequest
 from django.template import loader
 from django.shortcuts import render,redirect
+
 
 def add():
     print('hello')
