@@ -3,8 +3,7 @@ from django.template import loader
 from django.shortcuts import render,redirect
 
 
-def add():
-    print('hello')
+
 
 
 def home(request):
