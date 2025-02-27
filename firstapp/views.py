@@ -153,7 +153,7 @@ def panchayatContactsDisplay(request):
         cur = conn.cursor()
 
         # Selecting required attributes from panchayat_employees table
-        query = "SELECT pe.id, c.nm, STRING_AGG(cm.mobile_no, ', ') AS mobile_numbers, pe.role FROM panchayat_employees AS pe INNER JOIN citizens AS c ON pe.citizen_id = c.id INNER JOIN citizen_mobile AS cm ON c.id = cm.citizen_id GROUP BY pe.id, c.nm, pe.role;"
+        query = "SELECT  c.nm, STRING_AGG(cm.mobile_no, ', ') AS mobile_numbers, pe.role FROM panchayat_employees AS pe INNER JOIN citizens AS c ON pe.citizen_id = c.id INNER JOIN citizen_mobile AS cm ON c.id = cm.citizen_id GROUP BY pe.id, c.nm, pe.role;"
         cur.execute(query)
         data = cur.fetchall()  # Fetch all rows
 
@@ -161,7 +161,7 @@ def panchayatContactsDisplay(request):
         conn.close()
 
         # Convert data to a list of dictionaries
-        column_names = ["employee_id", "name", "mobile_number", "designation"]
+        column_names = [ "name", "mobile_number", "designation"]
         records = [dict(zip(column_names, row)) for row in data]
 
         return render(request, "panchayatContactsDisplay.html", {"records": records})
