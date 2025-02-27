@@ -142,31 +142,47 @@ def login(request):
     # GET Request: Show login page
     return render(request, "login.html", {"messages": messages.get_messages(request)})
 
+
+# View to display Village Dashboard with Panchayat Employee Contacts
 def village_dashboard(request):
-    return render(request, "villagedashboard.html")
+    logging.debug("village_dashboard view called.")  # Debugging Start
 
-
-# View to fetch Panchayat Employees data
-def panchayatContactsDisplay(request):
     try:
+        logging.debug("Connecting to the database...")
         conn = get_db_connection()
         cur = conn.cursor()
+        logging.debug("Database connection established.")
 
-        # Selecting required attributes from panchayat_employees table
-        query = "SELECT  c.nm, STRING_AGG(cm.mobile_no, ', ') AS mobile_numbers, pe.role FROM panchayat_employees AS pe INNER JOIN citizens AS c ON pe.citizen_id = c.id INNER JOIN citizen_mobile AS cm ON c.id = cm.citizen_id GROUP BY pe.id, c.nm, pe.role;"
+        # Fetch Panchayat Employees data
+        query = """
+        SELECT c.nm, STRING_AGG(CAST(cm.mobile_no AS TEXT), ', ') AS mobile_numbers, pe.job_role 
+        FROM panchayat_employees AS pe 
+        INNER JOIN citizens AS c ON pe.citizen_id = c.id 
+        INNER JOIN citizen_mobile AS cm ON c.id = cm.citizen_id 
+        GROUP BY pe.id, c.nm, pe.job_role;
+        """
+        logging.debug(f"Executing query: {query}")
         cur.execute(query)
-        data = cur.fetchall()  # Fetch all rows
+        data = cur.fetchall()
+        logging.debug(f"Query executed successfully. Retrieved {len(data)} records.")
 
         cur.close()
         conn.close()
+        logging.debug("Database connection closed.")
 
-        # Convert data to a list of dictionaries
-        column_names = [ "name", "mobile_number", "designation"]
+        # Convert data into a list of dictionaries
+        column_names = ["name", "mobile_number", "designation"]
         records = [dict(zip(column_names, row)) for row in data]
-
-        return render(request, "panchayatContactsDisplay.html", {"records": records})
+        
+        logging.debug(f"Processed records: {records}")  # Debugging Output
 
     except psycopg2.Error as e:
-        messages.error(request, f"Database error: {e}")
-        return render(request, "panchayatContactsDisplay.html", {"records": []})
+        error_message = f"Database error: {e}"
+        logging.error(error_message)  # Log the error
+        messages.error(request, error_message)
+        records = []
+
+    logging.debug("Rendering villagedashboard.html with records.")
+    return render(request, "villagedashboard.html", {"records": records})
+
 
