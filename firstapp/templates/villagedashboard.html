@@ -3,130 +3,245 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Responsive Table with Navbar</title>
+    <title>Responsive Webpage with Scrolling Effect</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 0;
-            padding: 20px;
-            background-color: #f4f4f4;
+            padding: 0;
         }
-        /* Navigation Bar Styles */
+
         .navbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
             background-color: #333;
+            color: white;
             padding: 10px 20px;
+        }
+
+        .navbar .logo img {
+            height: 40px;
+            margin-right: 10px;
+        }
+
+        .nav-buttons button {
+            margin-left: 10px;
+            padding: 10px;
+            background-color: #555;
             color: white;
+            border: none;
+            cursor: pointer;
         }
-        .navbar a {
-            color: white;
-            text-decoration: none;
-            padding: 10px 15px;
-            border-radius: 5px;
+
+        .notification-scrollbar {
+            background-color: #f1f1f1;
+            overflow-x: hidden; /* Hide horizontal scrollbar */
+            white-space: nowrap;
+            padding: 10px;
+            position: relative;
+            height: 50px; /* Set a fixed height */
         }
-        .navbar a:hover {
-            background-color: #575757;
+
+        .notification-scrollbar p {
+            display: inline-block;
+            margin: 0 20px; /* Space between notifications */
         }
-        /* Table Styles */
+
+        .accordion-container {
+            margin: 20px;
+        }
+
+        .accordion {
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+        }
+
+        .accordion-header {
+            background-color: #eee;
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        .accordion-content {
+            display: none;
+            padding: 10px;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
-            margin: 20px 0;
-            background-color: white;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
+
         th, td {
-            padding: 12px;
+            border: 1px solid #ccc;
+            padding: 8px;
             text-align: left;
-            border: 1px solid #ddd;
-        }
-        th {
-            background-color: #4CAF50; /* Green */
-            color: white;
-        }
-        tr:nth-child(even) {
-            background-color: #f2f2f2;
-        }
-        tr:hover {
-            background-color: #ddd;
-        }
-        @media (max-width: 600px) {
-            table, thead, tbody, th, td, tr {
-                display: block;
-            }
-            th {
-                display: none; /* Hide header on small screens */
-            }
-            tr {
-                margin-bottom: 15px;
-            }
-            td {
-                text-align: right;
-                position: relative;
-                padding-left: 50%; /* Space for the label */
-            }
-            td::before {
-                content: attr(data-label); /* Show label */
-                position: absolute;
-                left: 10px;
-                width: calc(50% - 20px);
-                padding-right: 10px;
-                text-align: left;
-                font-weight: bold;
-            }
         }
     </style>
 </head>
 <body>
 
-    <!-- Navigation Bar -->
-    <div class="navbar">
-        <div class="logo">GPMS</div>
-        <div>
-            <a href="#home">Home</a>
-            <a href="#about">Login</a>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="logo">
+            <img src="https://imgs.search.brave.com/3hNicgZJ3IuwDzZfer7CPYpB0iGGH_ZfowSpVttz_oo/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly90My5m/dGNkbi5uZXQvanBn/LzAzLzIxLzg1LzU4/LzM2MF9GXzMyMTg1/NTg0Ml9HOXJzMGhL/MFQ5b0ljYmlwTTRs/YlR1aEhLUkQ3clln/eS5qcGc" alt="Logo" />
+            <span>GPMS</span>
+        </div>
+        <div class="nav-buttons">
+            <button>Home</button>
+            <button>Login</button>
+        </div>
+    </nav>
+
+    <!-- Notification Scrollbar -->
+    <div class="notification-scrollbar" id="notification-scrollbar">
+        <p>Notification 1</p>
+        <p>Notification 2</p>
+        <p>Notification 3</p>
+        <p>Notification 4</p>
+        <p>Notification 5</p>
+        <p>Notification 6</p>
+        <p>Notification 7</p>
+    </div>
+
+    <!-- Accordions -->
+    <div class="accordion-container">
+        <h2>Accordion Section</h2>
+        <div class="accordion">
+            <div class="accordion-header">Employees</div>
+            <div class="accordion-content">
+                <table>
+                    <tr>
+                        <th>Name</th>
+                        <th>Role</th>
+                        <th>Contact</th>
+                    </tr>
+                    {% for record in records %}
+                    <tr>
+                        <td>{% records.name %}</td>
+                        <td>{% records.designation %}</td>
+                        <td>{% records.mobile_number %}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div class="accordion">
+            <div class="accordion-header">Accordion 2</div>
+            <div class="accordion-content">
+                <table>
+                    <tr>
+                        <th>Header 1</th>
+                        <th>Header 2</th>
+                    </tr>
+                    <tr>
+                        <td>Data 1</td>
+                        <td>Data 2</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div class="accordion">
+            <div class="accordion-header">Accordion 3</div>
+            <div class="accordion-content">
+                <table>
+                    <tr>
+                        <th>Header 1</th>
+                        <th>Header 2</th>
+                    </tr>
+                    <tr>
+                        <td>Data 1</td>
+                        <td>Data 2</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div class="accordion">
+            <div class="accordion-header">Accordion 4</div>
+            <div class="accordion-content">
+                <table>
+                    <tr>
+                        <th>Header 1</th>
+                        <th>Header 2</th>
+                    </tr>
+                    <tr>
+                        <td>Data 1</td>
+                        <td>Data 2</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div class="accordion">
+            <div class="accordion-header">Accordion 5</div>
+            <div class="accordion-content">
+                <table>
+                    <tr>
+                        <th>Header 1</th>
+                        <th>Header 2</th>
+                    </tr>
+                    <tr>
+                        <td>Data 1</td>
+                        <td>Data 2</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div class="accordion">
+            <div class="accordion-header">Accordion 6</div>
+            <div class="accordion-content">
+                <table>
+                    <tr>
+                        <th>Header 1</th>
+                        <th>Header 2</th>
+                    </tr>
+                    <tr>
+                        <td>Data 1</td>
+                        <td>Data 2</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div class="accordion">
+            <div class="accordion-header">Accordion 7</div>
+            <div class="accordion-content">
+                <table>
+                    <tr>
+                        <th>Header 1</th>
+                        <th>Header 2</th>
+                    </tr>
+                    <tr>
+                        <td>Data 1</td>
+                        <td>Data 2</td>
+                    </tr>
+                </table>
+            </div>
         </div>
     </div>
 
-    <h2>Responsive Table</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Role</th>
-                <th>Phone Number</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td data-label="Name">John Doe</td>
-                <td data-label="Role">Developer</td>
-                <td data-label="Phone Number">123-456-7890</td>
-            </tr>
-            <tr>
-                <td data-label="Name">Jane Smith</td>
-                <td data-label="Role">Designer</td>
-                <td data-label="Phone Number">234-567-8901</td>
-            </tr>
-            <tr>
-                <td data-label="Name">Alice Johnson</td>
-                <td data-label="Role">Project Manager</td>
-                <td data-label="Phone Number">345-678-9012</td>
-            </tr>
-            <tr>
-                <td data-label="Name">Bob Brown</td>
-                <td data-label="Role">QA Tester</td>
-                <td data-label="Phone Number">456-789-0123</td>
-            </tr>
-            <tr>
-                <td data-label="Name">Charlie White</td>
-                <td data-label="Role">System Analyst</td>
-                <td data-label="Phone Number">567-890-1234</td>
-            </tr>
-        </tbody>
-    </table>
+    <script>
+        // Accordion functionality
+        document.querySelectorAll('.accordion-header').forEach(header => {
+            header.addEventListener('click', () => {
+                const content = header.nextElementSibling;
+                content.style.display = content.style.display === 'block' ? 'none' : 'block';
+            });
+        });
 
+        // Scrolling effect for notifications
+        const notificationScrollbar = document.getElementById('notification-scrollbar');
+        let scrollAmount = 0;
+
+        function scrollNotifications() {
+            scrollAmount += 1; // Adjust the speed of scrolling
+            if (scrollAmount >= notificationScrollbar.scrollWidth) {
+                scrollAmount = 0; // Reset scroll amount
+            }
+            notificationScrollbar.scrollLeft = scrollAmount;
+            requestAnimationFrame(scrollNotifications);
+        }
+
+        // Start scrolling
+        scrollNotifications();
+    </script>
 </body>
 </html>
