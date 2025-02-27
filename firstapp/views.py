@@ -16,6 +16,7 @@ def home(request):
     template = loader.get_template("home.html")
     context = {'flag' : request.session['flag']}
     return HttpResponse(template.render(context,request))
+
 def get_db_connection():
     logger.debug("Attempting to establish a database connection...")
     return psycopg2.connect(
@@ -140,3 +141,32 @@ def login(request):
 
     # GET Request: Show login page
     return render(request, "login.html", {"messages": messages.get_messages(request)})
+
+def village_dashboard(request):
+    return render(request, "villagedashboard.html")
+
+
+# View to fetch Panchayat Employees data
+def panchayatContactsDisplay(request):
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+
+        # Selecting required attributes from panchayat_employees table
+        query = "SELECT pe.id, c.nm, STRING_AGG(cm.mobile_no, ', ') AS mobile_numbers, pe.role FROM panchayat_employees AS pe INNER JOIN citizens AS c ON pe.citizen_id = c.id INNER JOIN citizen_mobile AS cm ON c.id = cm.citizen_id GROUP BY pe.id, c.nm, pe.role;"
+        cur.execute(query)
+        data = cur.fetchall()  # Fetch all rows
+
+        cur.close()
+        conn.close()
+
+        # Convert data to a list of dictionaries
+        column_names = ["employee_id", "name", "mobile_number", "designation"]
+        records = [dict(zip(column_names, row)) for row in data]
+
+        return render(request, "panchayatContactsDisplay.html", {"records": records})
+
+    except psycopg2.Error as e:
+        messages.error(request, f"Database error: {e}")
+        return render(request, "panchayatContactsDisplay.html", {"records": []})
+
