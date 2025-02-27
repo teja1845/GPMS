@@ -4,8 +4,7 @@ from django.shortcuts import render,redirect
 import psycopg2
 from django.contrib import messages
 from django.contrib.auth.hashers import make_password
-def add():
-    print('hello')
+
 
 
 def home(request):
