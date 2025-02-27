@@ -188,3 +188,5 @@ def village_dashboard(request):
 def citizens(request):
     return render(request,"citizens.html")
 
+def panemp(request):
+    return render(request,"panchayat_employees.html")
