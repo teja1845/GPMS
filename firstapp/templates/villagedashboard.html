@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Table with Navbar</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        /* Navigation Bar Styles */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #333;
+            padding: 10px 20px;
+            color: white;
+        }
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+        }
+        .navbar a:hover {
+            background-color: #575757;
+        }
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #4CAF50; /* Green */
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #ddd;
+        }
+        @media (max-width: 600px) {
+            table, thead, tbody, th, td, tr {
+                display: block;
+            }
+            th {
+                display: none; /* Hide header on small screens */
+            }
+            tr {
+                margin-bottom: 15px;
+            }
+            td {
+                text-align: right;
+                position: relative;
+                padding-left: 50%; /* Space for the label */
+            }
+            td::before {
+                content: attr(data-label); /* Show label */
+                position: absolute;
+                left: 10px;
+                width: calc(50% - 20px);
+                padding-right: 10px;
+                text-align: left;
+                font-weight: bold;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation Bar -->
+    <div class="navbar">
+        <div class="logo">GPMS</div>
+        <div>
+            <a href="#home">Home</a>
+            <a href="#about">Login</a>
+        </div>
+    </div>
+
+    <h2>Responsive Table</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Role</th>
+                <th>Phone Number</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td data-label="Name">John Doe</td>
+                <td data-label="Role">Developer</td>
+                <td data-label="Phone Number">123-456-7890</td>
+            </tr>
+            <tr>
+                <td data-label="Name">Jane Smith</td>
+                <td data-label="Role">Designer</td>
+                <td data-label="Phone Number">234-567-8901</td>
+            </tr>
+            <tr>
+                <td data-label="Name">Alice Johnson</td>
+                <td data-label="Role">Project Manager</td>
+                <td data-label="Phone Number">345-678-9012</td>
+            </tr>
+            <tr>
+                <td data-label="Name">Bob Brown</td>
+                <td data-label="Role">QA Tester</td>
+                <td data-label="Phone Number">456-789-0123</td>
+            </tr>
+            <tr>
+                <td data-label="Name">Charlie White</td>
+                <td data-label="Role">System Analyst</td>
+                <td data-label="Phone Number">567-890-1234</td>
+            </tr>
+        </tbody>
+    </table>
+
+</body>
+</html>
