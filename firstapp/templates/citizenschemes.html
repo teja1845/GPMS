@@ -25,7 +25,8 @@
     </style>
 </head>
 <body>
-
+    <a href="{% url 'citizens' %}" class="back-button">Back</a>
+    {% csrf_token %}
     <h2>Schemes Table</h2>
     
     <table>
