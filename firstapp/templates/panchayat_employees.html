@@ -89,8 +89,8 @@
                         <td>{{ record.gender }}</td>
                         <td>{{ record.dob }}</td>
                         <td>
-                            <button>Edit</button>
-                            <button>Delete</button>
+                            <button style="background-color: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px; margin-top: 10px;" >Edit</button>
+                            <button style="background-color: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px; margin-top: 10px;" >Delete</button>
                         </td>
                     </tr>
                     {% endfor %}
@@ -123,7 +123,7 @@
                         <td>{{ record.id }}</td>
                         <td>{{ record.type }}</td>
                         <td>{{ record.list_owners }}</td>
-                        <td><button>Update</button></td>
+                        <td><button style="background-color: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px; margin-top: 10px;">Update</button></td>
                     </tr>
                     {% endfor %}
                     <!-- Repeat for 4 more rows -->
@@ -159,7 +159,7 @@
                         <td>{{ record.cer_id }}</td>
                         <td>{{ record.cer_type }}</td>
                         <td>{{ record.issue_date }}</td>
-                        <td><button>Download</button></td>
+                        <td><button style="background-color: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px; margin-top: 10px;">Download</button></td>
                     </tr>
                     {% endfor %}
                     <!-- Repeat for 4 more rows -->
@@ -177,7 +177,7 @@
                     <tr>
                         <th>Sno</th>
                         <th>TAX ID</th>
-                        <th>Citizen Name </th>
+                        <th>Citizen Name</th>
                         <th>Tax Type</th>
                         <th>Total Amount</th>
                         <th>Due Amount</th>
@@ -193,10 +193,15 @@
                         <td>{{ record.tax_type }}</td>
                         <td>{{ record.total_amount }}</td>
                         <td>{{ record.due }}</td>
-                        <td><button>Pay</button></td>
+                        <td>
+                            {% if record.due == 0 %}
+                                <button style="background-color: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px; margin-top: 10px;">Download</button>
+                            {% else %}
+                                <button style="background-color: red; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px; margin-top: 10px;">Pay</button>
+                            {% endif %}
+                        </td>
                     </tr>
                     {% endfor %}
-                    <!-- Repeat for 4 more rows -->
                 </tbody>
             </table>
             <button class="button">Update All</button>
@@ -211,15 +216,19 @@
             <table>
                 <thead>
                     <tr>
+                        <th>Sno</th>
                         <th>Scheme ID</th>
-                        <th>Member Name</th>
+                        <th>Scheme Name</th>
+                        <th>Members </th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for record in citizens_records %}
+                    {% for record in sch_records %}
                     <tr>
-                        <td>001</td>
-                        <td>John Doe</td>
+                        <td>{{ record.sno }}</td>
+                        <td>{{ record.sch_id }}</td>
+                        <td>{{ record.sch_name }}</td>
+                        <td>{{ record.members }}</td>
                     </tr>
                     {% endfor %}
                     <!-- Repeat for 4 more rows -->
@@ -235,16 +244,20 @@
             <table>
                 <thead>
                     <tr>
+                        <th>Sno</th>
                         <th>Scheme ID</th>
+                        <th>Scheme Name</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for record in citizens_records %}
+                    {% for record in wel_records %}
                     <tr>
-                        <td>001</td>
+                        <td>{{ record.sno }}</td>
+                        <td>{{ record.wel_id }}</td>
+                        <td>{{ record.wel_name }}</td>
                         <td>
-                            <button>View</button>
+                            <button style="background-color: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px; margin-top: 10px;">View</button>
                         </td>
                     </tr>
                     {% endfor %}
@@ -262,25 +275,25 @@
             <table>
                 <thead>
                     <tr>
+                        <th>sno</th>
                         <th>Asset ID</th>
                         <th>Asset Name</th>
-                        <th>Value</th>
-                        <th>Owner</th>
                         <th>Location</th>
+                        <th>Expenditure</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for record in citizens_records %}
+                    {% for record in assets_records %}
                     <tr>
-                        <td>001</td>
-                        <td>Tractor</td>
-                        <td>$10,000</td>
-                        <td>John Doe</td>
-                        <td>Farm 1</td>
+                        <td>{{ record.sno }}</td>
+                        <td>{{ record.ast_id }}</td>
+                        <td>{{ record.ast_name }}</td>
+                        <td>{{ record.loc }}</td>
+                        <td>{{ record.exp }}</td>
                         <td>
-                            <button>Edit</button>
-                            <button>Delete</button>
+                            <button style="background-color: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px; margin-top: 10px;">Edit</button>
+                            <button style="background-color: red; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px; margin-top: 10px;">Delete</button>
                         </td>
                     </tr>
                     {% endfor %}
