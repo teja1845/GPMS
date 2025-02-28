@@ -12,6 +12,7 @@ urlpatterns = [
      path('panchayat_employees',views.panemp,name='panchayat_employees'),
      path('citizens/paymentPage/',views.citizenPayments,name='citizenPayments'),
      path('citizens/previousTransactions/',views.previousTransactions,name='previousTransactions'),
+     path('citizens/land_records', views.land_records, name = 'land_records'),
 
      
 ]

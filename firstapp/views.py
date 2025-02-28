@@ -476,4 +476,62 @@ def previousTransactions(request):
     logging.debug("Rendering certificates.html with records.")
     return render(request, "previousTransactions.html", {"records": records})
 
+def land_records(request):
+    logging.debug("land_records view called.")  # Debugging Start
+
+    if  request.session.get("flag") != 1:
+        messages.error(request, "you are not logged in")
+        return redirect('login')
+
+    try:
+        # logging.debug("Connecting to the database...")
+        conn = get_db_connection()
+        cur = conn.cursor()
+        # logging.debug("Database connection established.")
+        citizen_id = request.session.get("id")
+
+        # Fetch Panchayat Employees data
+        query = """
+        SELECT 
+        lo1.land_id AS Land_id,
+        la.area_acres AS Area,
+        la.type_l AS Land_type,
+        CASE 
+            WHEN COUNT(lo2.citizen_id) > 0 THEN 
+                COALESCE(STRING_AGG(DISTINCT c2.nm, ', ' ORDER BY c2.nm), '') 
+            ELSE 
+                'NULL' 
+        END AS Co_owners
+        FROM land_ownership lo1
+        JOIN land_acres la ON lo1.land_id = la.id
+        LEFT JOIN land_ownership lo2 ON lo1.land_id = lo2.land_id AND lo1.citizen_id != lo2.citizen_id
+        LEFT JOIN Citizens c2 ON lo2.citizen_id = c2.id
+        WHERE lo1.citizen_id = %s AND la.stat = 'Active'
+        GROUP BY lo1.land_id, la.area_acres, la.type_l, lo1.citizen_id;
+
+        """
+        # Execute the query with the citizen_id parameter
+        cur.execute(query, (citizen_id,))
+        data = cur.fetchall()
+        logging.debug(f"Query executed successfully. Retrieved {len(data)} records.")
+
+        cur.close()
+        conn.close()
+        logging.debug("Database connection closed.")
+
+        # Convert data into a list of dictionaries
+        column_names = ["Land_id", "Area", "Type_of_land", "co_owners"]
+        records = [dict(zip(column_names, row)) for row in data]
+        
+        logging.debug(f"Processed records: {records}")  # Debugging Output
+
+    except psycopg2.Error as e:
+        error_message = f"Database error: {e}"
+        logging.error(error_message)  # Log the error
+        messages.error(request, error_message)
+        records = []
+
+    logging.debug("Rendering land_records.html with records.")
+    return render(request, "land_records.html", {"records": records})
+
 

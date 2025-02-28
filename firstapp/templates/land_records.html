@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Land Records</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e3f2fd; /* Light Blue */
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #1976d2; /* Blue */
+            text-align: center;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .record {
+            border: 2px solid #1976d2; /* Blue */
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            background-color: #bbdefb; /* Light Blue */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            padding: 10px;
+            background-color: #1976d2; /* Blue */
+            color: white;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        .column {
+            flex: 1; /* Each column takes equal space */
+            margin-right: 10px; /* Space between columns */
+        }
+        .column:last-child {
+            margin-right: 0; /* Remove margin for the last column */
+        }
+        .btn-back {
+            display: inline-block;
+            padding: 10px 15px;
+            background-color: #1976d2; /* Blue */
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-bottom: 20px; /* Space below the button */
+        }
+        .btn-back:hover {
+            background-color: #1565c0; /* Darker Blue */
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <a href= "{% url 'citizens' %}" class="btn-back">Back</a> <!-- Back Button -->
+
+    <h1>My Land Records</h1>
+
+    <div class="header">
+        <div class="column">Land ID</div>
+        <div class="column">Area (Acres)</div>
+        <div class="column">Type of Land</div>
+        <div class="column">Co-Owners</div>
+    </div>
+
+    {% for record in records %}
+    <div class="record">
+        <div class="column">
+            <h2>{{ record.Land_id }}</h2>
+        </div>
+        <div class="column">
+            <p>{{ record.Area }}</p>
+        </div>
+        <div class="column">
+            <p>{{ record.Type_of_land }}</p>
+        </div>
+        <div class="column">
+            <p>{{ record.co_owners|default:"NULL" }}</p> <!-- Display NULL if no co-owners -->
+        </div>
+    </div>
+    {% empty %}
+    <div class="record">
+        <p>No land records found.</p>
+    </div>
+    {% endfor %}
+
+</div>
+
+</body>
+</html>
