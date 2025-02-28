@@ -189,7 +189,90 @@ def citizens(request):
     return render(request,"citizens.html")
 
 def panemp(request):
-    return render(request,"panchayat_employees.html")
+    try:
+        # logging.debug("Connecting to the database...")
+        conn = get_db_connection()
+        cur = conn.cursor()
+        # logging.debug("Database connection established.")
+
+        # Fetch citizens data
+        query = """
+        SELECT id,nm,gender,dob
+        FROM citizens;
+        """
+        # logging.debug(f"Executing query: {query}")
+        cur.execute(query)
+        c_data = cur.fetchall()
+        # logging.debug(f"Query executed successfully. Retrieved {len(data)} records.")
+
+        # Fetch land-ownership data
+        query = """
+        SELECT 
+            la.ID as land_id,
+            la.type_l as land_type,
+            STRING_AGG(c.nm,', ') as list_of_owners
+        FROM land_acres la
+        LEFT JOIN land_ownership lo on la.ID=lo.land_id
+        LEFT JOIN citizens c on lo.citizen_id=c.ID
+        GROUP BY la.ID,la.type_l;
+        """
+        # logging.debug(f"Executing query: {query}")
+        cur.execute(query)
+        l_data = cur.fetchall()
+        # logging.debug(f"Query executed successfully. Retrieved {len(data)} records.")
+        # Fetch certificate  data
+        query = """
+        SELECT
+            cc.citizen_id,
+            ci.nm AS citizen_name,
+            cc.certificate_id,
+            c.type AS certificate_type,
+            c.issue_date
+        FROM citizen_certificate cc
+        JOIN certificates c ON cc.certificate_id = c.certificate_id
+        JOIN citizens ci ON cc.citizen_id = ci.ID;
+        """
+        # logging.debug(f"Executing query: {query}")
+        cur.execute(query)
+        cer_data = cur.fetchall()
+        # logging.debug(f"Query executed successfully. Retrieved {len(data)} records.")
+
+        #query to taxes 
+        query = """
+        SELECT tax_id,citizen_id,tax_type, total_amount, due
+        FROM payment_taxes
+        """
+        cur.execute(query)
+        txn_data = cur.fetchall()
+
+        cur.close()
+        conn.close()
+        # logging.debug("Database connection closed.")
+
+        # Convert data into a list of dictionaries
+        c_column_names = ["sno","id", "name", "gender","dob"]
+        citizens_records = [{"sno": idx + 1, **dict(zip(c_column_names[1:], row))} for idx, row in enumerate(c_data)]
+
+        l_column_names=["sno","id","type","list_owners"]
+        land_records= [{"sno": idx + 1, **dict(zip(l_column_names[1:], row))} for idx, row in enumerate(l_data)]
+
+        
+        cer_column_names=["sno","c_id","c_name","cer_id","cer_type","issue_date"]
+        cer_records=[{"sno": idx + 1, **dict(zip(cer_column_names[1:], row))} for idx, row in enumerate(cer_data)]
+        
+        txn_column_names=["sno","tax_id","ctzn_id","tax_type","total_amount","due"]
+        txn_records = [{"sno": idx + 1, **dict(zip(txn_column_names[1:], row))} for idx, row in enumerate(txn_data)]
+
+        # logging.debug(f"Processed records: {records}")  # Debugging Output
+
+    except psycopg2.Error as e:
+        error_message = f"Database error: {e}"
+        logging.error(error_message)  # Log the error
+        messages.error(request, error_message)
+        records=[]
+
+    return render(request,"panchayat_employees.html",{"citizens_record":citizens_records,"land_records":land_records,"cer_records":cer_records,"tax_records":txn_records})
+
 
 
 # View to fetch citizen's taxes
