@@ -8,6 +8,9 @@ urlpatterns = [
      path('villagedashboard',views.village_dashboard,name='villagedashboard'),
      path('citizens',views.citizens,name='citizens'),
      path('citizens/tax_payments',views.citizenTaxes,name = 'citizenTaxes'),
+     path('citizens/mycertificates',views.mycertificates,name = 'mycertificates'),
      path('panchayat_employees',views.panemp,name='panchayat_employees'),
+     path('citizens/paymentPage/',views.citizenPayments,name='citizenPayments'),
+
      
 ]

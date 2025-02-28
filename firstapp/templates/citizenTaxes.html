@@ -52,13 +52,14 @@
             <td>{{ record.due }}</td>
             <td>
                 <button 
-                    onclick="location.href='citizens/paymentPage.html'" 
-                    {% if record.due <= 0 %} class="disabled" disabled {% endif %}>
-                    Pay
-                </button>
+                onclick="location.href='paymentPage/?tax_id={{ record.tax_id }}'" 
+                {% if record.due <= 0 %} class="disabled" disabled {% endif %}>
+                Pay
+            </button>
+            
             </td>
             <td>
-                <button onclick="location.href='citizens/previousTransactions'">Previous Transactions</button>
+                <button onclick="location.href='citizens/previousTransactions/?tax_id={{ record.tax_id }}'">Previous Transactions</button>
             </td>
         </tr>
         {% endfor %}
