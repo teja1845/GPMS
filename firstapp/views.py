@@ -586,4 +586,55 @@ def citizenschemes(request):
 
     return render(request, "citizenschemes.html", {"records": records})
 
+def citizensProfile(request):
+
+    citizen_id = request.session.get("id")
+    logging.debug(f"Citizen ID = {citizen_id}")
+
+    if  request.session.get("flag") != 1:
+        messages.error(request, "you are not logged in")
+        return redirect('login')
+    
+    try:
+        logging.debug("Connecting to the database...")
+        conn = get_db_connection()
+        cur = conn.cursor()
+        logging.debug("Database connection established.")
+        
+
+        # Fetch the certificate id, certificate type, issued date, event type 
+        query = """
+        SELECT 
+        c.nm AS citizen_name, c.username, c.id, c.gender, c.dob, c.education_qualifications, f.nm AS father_name, 
+        m.nm AS mother_name, s.nm AS spouse_name, c.category, c.occupation, c.income
+        FROM citizens c
+        LEFT JOIN citizens f ON c.father_id = f.id
+        LEFT JOIN citizens m ON c.mother_id = m.id
+        LEFT JOIN citizens s ON c.spouse_id = s.id
+        WHERE c.id = %s;
+        """
+        logging.debug(f"Executing query: {query}")
+        cur.execute(query, (citizen_id,))
+        data = cur.fetchall()
+        logging.debug(f"Query executed successfully. Retrieved {len(data)} records.")
+
+        cur.close()
+        conn.close()
+        logging.debug("Database connection closed.")
+        # Convert data into a list of dictionaries
+        column_names = ["citizen_name","username","citizen_id","gender","dob","education_qualifications","fathername",
+                        "mothername", "spousename", "category", "occupation", "income" ]
+        records = [dict(zip(column_names, row)) for row in data]
+        
+        logging.debug(f"Processed records: {records}")  # Debugging Output
+
+    except psycopg2.Error as e:
+        error_message = f"Database error: {e}"
+        logging.error(error_message)  # Log the error
+        messages.error(request, error_message)
+        records = []
+
+    logging.debug("Rendering citizenProfile.html with records.")
+    return render(request, "citizenProfile.html", {"records": records})
+
 
