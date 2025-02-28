@@ -72,26 +72,28 @@
             <table>
                 <thead>
                     <tr>
+                        <th>Sno</th>
+                        <th>ID</th>
                         <th>Name</th>
-                        <th>Age</th>
-                        <th>Address</th>
-                        <th>Phone</th>
-                        <th>Email</th>
+                        <th>Gender</th>
+                        <th>DoB</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
+                    {% for record in citizens_record %}
                     <tr>
-                        <td>John Doe</td>
-                        <td>30</td>
-                        <td>123 Main St</td>
-                        <td>123-456-7890</td>
-                        <td>john@example.com</td>
+                        <td>{{ record.sno }}</td>
+                        <td>{{ record.id }}</td>
+                        <td>{{ record.name }}</td>
+                        <td>{{ record.gender }}</td>
+                        <td>{{ record.dob }}</td>
                         <td>
                             <button>Edit</button>
                             <button>Delete</button>
                         </td>
                     </tr>
+                    {% endfor %}
                     <!-- Repeat for 4 more rows -->
                 </tbody>
             </table>
@@ -107,21 +109,23 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Land ID</th>
-                        <th>Owner Name</th>
-                        <th>Area</th>
-                        <th>Location</th>
+                        <th>Sno</th>
+                        <th>ID</th>
+                        <th>Type</th>
+                        <th>List of Owners</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
+                    {% for record in land_records %}
                     <tr>
-                        <td>001</td>
-                        <td>Jane Smith</td>
-                        <td>500 sq ft</td>
-                        <td>North Side</td>
+                        <td>{{ record.sno }}</td>
+                        <td>{{ record.id }}</td>
+                        <td>{{ record.type }}</td>
+                        <td>{{ record.list_owners }}</td>
                         <td><button>Update</button></td>
                     </tr>
+                    {% endfor %}
                     <!-- Repeat for 4 more rows -->
                 </tbody>
             </table>
@@ -137,19 +141,27 @@
             <table>
                 <thead>
                     <tr>
+                        <th>Sno</th>
+                        <th>Citizen ID</th>
+                        <th>Citizen Name</th>
                         <th>Certificate ID</th>
-                        <th>Holder Name</th>
+                        <th>Certificate type</th>
                         <th>Issue Date</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
+                    {% for record in cer_records %}
                     <tr>
-                        <td>001</td>
-                        <td>John Doe</td>
-                        <td>2023-01-01</td>
+                        <td>{{ record.sno }}</td>
+                        <td>{{ record.c_id }}</td>
+                        <td>{{ record.c_name }}</td>
+                        <td>{{ record.cer_id }}</td>
+                        <td>{{ record.cer_type }}</td>
+                        <td>{{ record.issue_date }}</td>
                         <td><button>Download</button></td>
                     </tr>
+                    {% endfor %}
                     <!-- Repeat for 4 more rows -->
                 </tbody>
             </table>
@@ -163,19 +175,27 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Tax ID</th>
-                        <th>Owner Name</th>
+                        <th>Sno</th>
+                        <th>TAX ID</th>
+                        <th>Citizen ID</th>
+                        <th>Tax Type</th>
+                        <th>Total Amount</th>
                         <th>Due Amount</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
+                    {% for record in tax_records %}
                     <tr>
-                        <td>001</td>
-                        <td>Jane Smith</td>
-                        <td>$200</td>
+                        <td>{{ record.sno }}</td>
+                        <td>{{ record.tax_id }}</td>
+                        <td>{{ record.ctzn_id }}</td>
+                        <td>{{ record.tax_type }}</td>
+                        <td>{{ record.total_amount }}</td>
+                        <td>{{ record.due }}</td>
                         <td><button>Pay</button></td>
                     </tr>
+                    {% endfor %}
                     <!-- Repeat for 4 more rows -->
                 </tbody>
             </table>
@@ -196,10 +216,12 @@
                     </tr>
                 </thead>
                 <tbody>
+                    {% for record in citizens_records %}
                     <tr>
                         <td>001</td>
                         <td>John Doe</td>
                     </tr>
+                    {% endfor %}
                     <!-- Repeat for 4 more rows -->
                 </tbody>
             </table>
@@ -218,12 +240,14 @@
                     </tr>
                 </thead>
                 <tbody>
+                    {% for record in citizens_records %}
                     <tr>
                         <td>001</td>
                         <td>
                             <button>View</button>
                         </td>
                     </tr>
+                    {% endfor %}
                     <!-- Repeat for 4 more rows -->
                 </tbody>
             </table>
@@ -247,6 +271,7 @@
                     </tr>
                 </thead>
                 <tbody>
+                    {% for record in citizens_records %}
                     <tr>
                         <td>001</td>
                         <td>Tractor</td>
@@ -258,6 +283,7 @@
                             <button>Delete</button>
                         </td>
                     </tr>
+                    {% endfor %}
                     <!-- Repeat for 4 more rows -->
                 </tbody>
             </table>
