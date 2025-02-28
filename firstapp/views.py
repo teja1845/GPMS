@@ -295,6 +295,26 @@ def panemp(request):
         cur.execute(query)
         ast_data = cur.fetchall()
 
+        #query to assets 
+        query = """
+        SELECT 
+            h.ID AS household_id, 
+            h.addr AS address, 
+            h.income AS household_income, 
+            STRING_AGG(c.nm, ', ') AS member_names
+        FROM 
+            households h
+        LEFT JOIN 
+            citizens c ON h.ID = c.household_id
+        GROUP BY 
+            h.ID, h.addr, h.income
+        ORDER BY 
+            h.ID;
+
+        """
+        cur.execute(query)
+        house_data = cur.fetchall()
+        
         cur.close()
         conn.close()
         # logging.debug("Database connection closed.")
@@ -321,6 +341,9 @@ def panemp(request):
 
         ast_column_names=["sno","ast_id","ast_name","loc","exp"]
         ast_records = [{"sno": idx + 1, **dict(zip(ast_column_names[1:], row))} for idx, row in enumerate(ast_data)]
+        
+        house_column_names=["sno","house_id","addr","income","members"]
+        house_records = [{"sno": idx + 1, **dict(zip(house_column_names[1:], row))} for idx, row in enumerate(house_data)]
         # logging.debug(f"Processed records: {records}")  # Debugging Output
 
     except psycopg2.Error as e:
@@ -329,7 +352,7 @@ def panemp(request):
         messages.error(request, error_message)
         records=[]
 
-    return render(request,"panchayat_employees.html",{"citizens_record":citizens_records,"land_records":land_records,"cer_records":cer_records,"tax_records":txn_records,"wel_records":wel_records,"sch_records":sch_records,"assets_records":ast_records})
+    return render(request,"panchayat_employees.html",{"citizens_record":citizens_records,"land_records":land_records,"cer_records":cer_records,"tax_records":txn_records,"wel_records":wel_records,"sch_records":sch_records,"assets_records":ast_records,"house_records":house_records})
 
 def addcitizen(request):
     logging.debug("addcitizen view called.")
