@@ -89,15 +89,14 @@
                         <td>{{ record.gender }}</td>
                         <td>{{ record.dob }}</td>
                         <td>
-                            <button style="background-color: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px; margin-top: 10px;" >Edit</button>
-                            <button style="background-color: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px; margin-top: 10px;" >Delete</button>
+                            <button style="background-color: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px; margin-top: 10px;" >Update</button>
                         </td>
                     </tr>
                     {% endfor %}
                     <!-- Repeat for 4 more rows -->
                 </tbody>
             </table>
-            <button class="button">Add New Row</button>
+            <button class="button" onclick="location.href='addcitizen'">Add New Row</button>
         </div>
     </div>
 

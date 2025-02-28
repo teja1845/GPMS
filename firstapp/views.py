@@ -3,6 +3,7 @@ from django.template import loader
 from django.shortcuts import render,redirect
 import psycopg2
 from django.contrib import messages
+from datetime import datetime
 from django.contrib.auth.hashers import make_password,check_password
 import logging
 
@@ -198,7 +199,8 @@ def panemp(request):
         # Fetch citizens data
         query = """
         SELECT id,nm,gender,dob
-        FROM citizens;
+        FROM citizens
+        WHERE date_of_death  IS  NULL;
         """
         # logging.debug(f"Executing query: {query}")
         cur.execute(query)
@@ -329,7 +331,76 @@ def panemp(request):
 
     return render(request,"panchayat_employees.html",{"citizens_record":citizens_records,"land_records":land_records,"cer_records":cer_records,"tax_records":txn_records,"wel_records":wel_records,"sch_records":sch_records,"assets_records":ast_records})
 
-
+def addcitizen(request):
+    logging.debug("addcitizen view called.")
+    
+    # Check if the user is logged in (flag must be 1)
+    if request.session.get("flag") != 1:
+        messages.error(request, "You must be logged in to add a citizen.")
+        return redirect("login")
+    
+    if request.method == "POST":
+        name = request.POST.get("nm")
+        gender = request.POST.get("gender")
+        household_id = request.POST.get("household_id")
+        education_qualification = request.POST.get("education_qualification")
+        father = request.POST.get("father") or None
+        mother = request.POST.get("mother") or None
+        spouse = request.POST.get("spouse") or None
+        dob = request.POST.get("DOB")
+        category = request.POST.get("category")
+        income = request.POST.get("income")
+        occupation = request.POST.get("occupation") 
+        
+        try:
+            logging.debug("Attempting to connect to the database...")
+            conn = get_db_connection()
+            cur = conn.cursor()
+            logging.debug("Database connection established.")
+            
+            # Convert empty strings to NULL for optional fields
+            household_id = int(household_id) if household_id else None
+            father = int(father) if father else None
+            mother = int(mother) if mother else None
+            spouse = int(spouse) if spouse else None
+            income = float(income) if income else None
+            dob = datetime.strptime(dob, "%Y-%m-%d").date() if dob else None
+            if occupation=="nan":
+                occupation=None
+            query = """
+                INSERT INTO citizens (nm, gender, household_id, education_qualification, father, mother, spouse, DOB, category, income, occupation)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
+            """
+            
+            values = (name, gender, household_id, education_qualification, father, mother, spouse, dob, category, income, occupation)
+            logging.debug(f"Executing SQL Query: {query} with values {values}")
+            
+            cur.execute(query, values)
+            conn.commit()
+            logging.debug("Transaction committed successfully.")
+            
+            cur.close()
+            conn.close()
+            logging.debug("Database connection closed.")
+            messages.success(request, "Citizen added successfully.")
+            return redirect("panchayat_employees")  # Redirect to home or another page after success
+            
+        except psycopg2.Error as e:
+            conn.rollback()
+            logging.error(f"Database error: {e}")
+            messages.error(request, f"Database error: {e}")
+            
+        except ValueError as e:
+            logging.error(f"Value error: {e}")
+            messages.error(request, "Invalid data format.")
+            
+        finally:
+            if cur:
+                cur.close()
+            if conn:
+                conn.close()
+            
+    return render(request, "addcitizen.html")
 
 # View to fetch citizen's taxes
 def citizenTaxes(request):

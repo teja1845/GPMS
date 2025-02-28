@@ -19,5 +19,6 @@ urlpatterns = [
      path('govt_monitors',views.govt_monitors,name='govt_monitors'),
      path('logout',views.logout,name = 'logout'),
 
+     path('addcitizen',views.addcitizen,name="addcitizen"),
      
 ]
