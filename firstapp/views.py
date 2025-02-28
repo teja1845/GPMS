@@ -239,8 +239,9 @@ def panemp(request):
 
         #query to taxes 
         query = """
-        SELECT tax_id,citizen_id,tax_type, total_amount, due
+        SELECT tax_id,citizen_id,c.nm,tax_type, total_amount, due
         FROM payment_taxes
+        JOIN citizens c on  c.id=payment_taxes.citizen_id;
         """
         cur.execute(query)
         txn_data = cur.fetchall()
@@ -260,7 +261,7 @@ def panemp(request):
         cer_column_names=["sno","c_id","c_name","cer_id","cer_type","issue_date"]
         cer_records=[{"sno": idx + 1, **dict(zip(cer_column_names[1:], row))} for idx, row in enumerate(cer_data)]
         
-        txn_column_names=["sno","tax_id","ctzn_id","tax_type","total_amount","due"]
+        txn_column_names=["sno","tax_id","ctzn_id","name","tax_type","total_amount","due"]
         txn_records = [{"sno": idx + 1, **dict(zip(txn_column_names[1:], row))} for idx, row in enumerate(txn_data)]
 
         # logging.debug(f"Processed records: {records}")  # Debugging Output
