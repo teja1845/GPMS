@@ -16,6 +16,8 @@ urlpatterns = [
      path('citizens/myschemes',views.citizenschemes,name = 'citizenschemes'),
      path('citizens/profile',views.citizensProfile,name = 'citizensProfile'),
      path('citizens/editprofile',views.editCitizenProfile,name = 'editCitizenProfile'),
+     path('govt_monitors',views.govt_monitors,name='govt_monitors'),
+     path('logout',views.logout,name = 'logout'),
 
      
 ]

@@ -3,9 +3,213 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Government Monitor Main Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        .accordion {
+            background-color: #eee;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .accordion-header {
+            padding: 10px;
+            cursor: pointer;
+            text-align: left;
+            outline: none;
+            font-size: 18px;
+            transition: background-color 0.3s;
+        }
+        .accordion-header:hover {
+            background-color: #ddd;
+        }
+        .accordion-content {
+            display: none;
+            padding: 10px;
+            border-top: 1px solid #ccc;
+            background-color: white;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+        .button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        .button:hover {
+            background-color: #45a049;
+        }
+    </style>
 </head>
 <body>
-    HI
-</body>
+
+    <h1>Government Monitor Main Page</h1>
+
+    <div class="accordion">
+        <div class="accordion-header">Revenue Report</div>
+        <div class="accordion-content">
+            <table>
+                <tr>
+                    <th>Year</th>
+                    <th>Salary</th>
+                    <th>Asset Expenditure</th>
+                    <th>Tax</th>
+                    <th>Scrap</th>
+                    <th>Scheme</th>
+                    <th>Net Amount</th>
+                </tr>
+                {% for record in records %}
+                <tr>
+                    <td>{{ record.year}}</td>
+                    <td>{{ record.salaries }}</td>
+                    <td>{{ record.asset_exp}}</td>
+                    <td>{{ record.tax}}</td>
+                    <td>{{ record.scrap}}</td>
+                    <td>{{ record.scheme}}</td>
+                    <td>{{ record.net_amount}}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+
+    <div class="accordion">
+        <div class="accordion-header">Lands</div>
+        <div class="accordion-content">
+           
+            <table>
+               
+            </table>
+            <button class="button">Add New Row</button>
+        </div>
+    </div>
+
+    <div class="accordion">
+        <div class="accordion-header">Certificates</div>
+        <div class="accordion-content">
+           
+            <table>
+                
+            </table>
+            <button class="button">Add New Row</button>
+        </div>
+    </div>
+
+    <div class="accordion">
+        <div class="accordion-header">Tax Dues</div>
+        <div class="accordion-content">
+            <table>
+                
+            </table>
+           
+        </div>
+    </div>
+
+    <div class="accordion">
+        <div class="accordion-header">Scheme Enrollment</div>
+        <div class="accordion-content">
+            
+            <table>
+             
+            </table>
+           
+        </div>
+    </div>
+
+    <div class="accordion">
+        <div class="accordion-header">Welfare Schemes</div>
+        <div class="accordion-content">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Scheme ID</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in citizens_records %}
+                    <tr>
+                        <td>001</td>
+                        <td>
+                            <button>View</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    <!-- Repeat for 4 more rows -->
+                </tbody>
+            </table>
+            <button class="button">Add</button>
+            <button class="button">Delete</button>
+        </div>
+    </div>
+
+    <div class="accordion">
+        <div class="accordion-header">Assets</div>
+        <div class="accordion-content">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Asset ID</th>
+                        <th>Asset Name</th>
+                        <th>Value</th>
+                        <th>Owner</th>
+                        <th>Location</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in citizens_records %}
+                    <tr>
+                        <td>001</td>
+                        <td>Tractor</td>
+                        <td>$10,000</td>
+                        <td>John Doe</td>
+                        <td>Farm 1</td>
+                        <td>
+                            <button>Edit</button>
+                            <button>Delete</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    <!-- Repeat for 4 more rows -->
+                </tbody>
+            </table>
+            <button class="button">Add Assets</button>
+        </div>
+    </div>
+
+    <button class="button" style="display: block; margin: 20px auto;" onclick="location.href='villagedashboard'">Village Dashboard</button>
+
+    <script>
+        // JavaScript for accordion functionality
+        const accordions = document.querySelectorAll('.accordion-header');
+        accordions.forEach(accordion => {
+            accordion.addEventListener('click', function() {
+                const content = this.nextElementSibling;
+                content.style.display = content.style.display === 'block' ? 'none' : 'block';
+            });
+        });
+    </script>
+
+</body> 
 </html>

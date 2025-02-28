@@ -692,11 +692,6 @@ def citizensProfile(request):
     logging.debug("Rendering citizenProfile.html with records.")
     return render(request, "citizenProfile.html", {"records": records})
 
-from django.shortcuts import render, redirect
-from django.contrib import messages
-import psycopg2
-import logging
-from django.contrib.auth.hashers import make_password
 
 def editCitizenProfile(request):
     citizen_id = request.session.get("id")
@@ -704,7 +699,12 @@ def editCitizenProfile(request):
     if not citizen_id:
         messages.error(request, "You are not logged in.")
         return redirect("login")
-
+    if  request.session.get("flag") != 1:
+        messages.error(request, "you are not logged in")
+        return redirect('login')
+    if  request.session.get("user_type") != "citizens":
+        messages.error(request, "you are not a citizen .Login as govt Monitor")
+        return redirect('login')
     try:
         logging.debug("Connecting to the database...")
         conn = get_db_connection()
@@ -721,7 +721,7 @@ def editCitizenProfile(request):
         """
         logging.debug(f"Executing query: {query}")
         cur.execute(query, (citizen_id,))
-        data = cur.fetchone()  # ✅ Fetch one row only
+        data = cur.fetchone()  
         logging.debug(f"Query executed successfully. Retrieved record: {data}")
 
         cur.close()
@@ -732,7 +732,7 @@ def editCitizenProfile(request):
             messages.error(request, "Citizen not found.")
             return redirect("citizensProfile")
 
-        # ✅ Convert to dictionary
+
         column_names = ["citizen_name", "username", "citizen_id", "gender", "dob", "education_qualification", "occupation"]
         citizen_data = dict(zip(column_names, data))
 
@@ -741,11 +741,11 @@ def editCitizenProfile(request):
         messages.error(request, f"Database error: {e}")
         return redirect("citizensProfile")
 
-    # ✅ If GET request, render form with existing data
+   
     if request.method == "GET":
         return render(request, "editCitizenProfile.html", {"citizen": citizen_data})
 
-    # ✅ If POST request, update the database
+ 
     elif request.method == "POST":
         education_qualification = request.POST.get("education_qualification")
         occupation = request.POST.get("occupation")
@@ -765,7 +765,7 @@ def editCitizenProfile(request):
             logging.debug(f"Executing update query: {update_query} with values {values}")
             cur.execute(update_query, values)
 
-            # ✅ Update password only if provided
+        
             if new_password:
                 hashed_password = make_password(new_password)
                 cur.execute("UPDATE citizens SET passwd = %s WHERE id = %s;", (hashed_password, citizen_id))
@@ -786,4 +786,95 @@ def editCitizenProfile(request):
 
     return render(request, "editCitizenProfile.html", {"citizen": citizen_data})
 
+def govt_monitors(request):
+    if  request.session.get("flag") != 1:
+        messages.error(request, "you are not logged in")
+        return redirect('login')
+    if  request.session.get("user_type") != "govt_monitors":
+        messages.error(request, "you are not a govt monitor .Login as govt Monitor")
+        return redirect('login')
+    try:
+        # logging.debug("Connecting to the database...")
+        conn = get_db_connection()
+        cur = conn.cursor()
+        # logging.debug("Database connection established.")
 
+        # Fetch revenue report
+        query = """
+        WITH RECURSIVE years AS (
+        SELECT MIN(EXTRACT(YEAR FROM enrollment_date)) AS year FROM scheme_enrollment
+        UNION
+        SELECT year + 1 FROM years WHERE year < EXTRACT(YEAR FROM CURRENT_DATE)
+        ),
+
+        wlf_amount AS (
+            SELECT EXTRACT(YEAR FROM se.enrollment_date) AS year,
+                SUM(ws.scheme_amt) AS scheme_amount
+            FROM scheme_enrollment AS se
+            JOIN welfare_scheme AS ws ON se.scheme_id = ws.scheme_id
+            GROUP BY year
+        ),
+
+        salaries AS (
+            SELECT y.year, SUM(pe.salary) AS salary
+            FROM years y
+            CROSS JOIN panchayat_employees pe
+            GROUP BY y.year
+        ),
+
+        asset_exp AS (
+            SELECT EXTRACT(YEAR FROM ae.spent_date) AS year,
+                SUM(ae.amount_spent) AS asset_exp
+            FROM assets_expenditure AS ae
+            GROUP BY year
+        ),
+
+        tax AS (
+            SELECT EXTRACT(YEAR FROM th.trnsc_date) AS year,
+                SUM(th.amount_paid) AS tax
+            FROM transaction_history AS th
+            GROUP BY year
+        ),
+
+        scrap AS (
+            SELECT EXTRACT(YEAR FROM a.demolition_date) AS year,
+                SUM(a.scrap_cost) AS scrap
+            FROM assets AS a
+            GROUP BY year
+        )
+
+        SELECT y.year AS Year,
+            COALESCE(sa.salary, 0) AS Salaries,
+            COALESCE(ae.asset_exp, 0) AS Asset_Exp,
+            COALESCE(t.tax, 0) AS Tax,
+            COALESCE(sc.scrap, 0) AS Scrap,
+            COALESCE(wa.scheme_amount, 0) AS Scheme,
+            (COALESCE(t.tax, 0) + COALESCE(sc.scrap, 0) - COALESCE(wa.scheme_amount, 0) - COALESCE(sa.salary, 0) - COALESCE(ae.asset_exp, 0)) AS Net_Amount
+        FROM years y
+        LEFT JOIN salaries sa ON y.year = sa.year
+        LEFT JOIN asset_exp ae ON y.year = ae.year
+        LEFT JOIN tax t ON y.year = t.year
+        LEFT JOIN scrap sc ON y.year = sc.year
+        LEFT JOIN wlf_amount wa ON y.year = wa.year
+        ORDER BY Year;
+
+        """
+        # logging.debug(f"Executing query: {query}")
+        cur.execute(query)
+        rev_rep_data = cur.fetchall()
+        # logging.debug(f"Query executed successfully. Retrieved {len(data)} records.")
+        
+        rr_column_names = ["year","salaries", "asset_exp", "tax","scrap","scheme","net_amount"]
+        rr_records = [{"s_no": idx + 1, **dict(zip(rr_column_names, row))} for idx, row in enumerate(rev_rep_data)]
+      
+    except psycopg2.Error as e:
+        error_message = f"Database error: {e}"
+        logging.error(error_message)  # Log the error
+        messages.error(request, error_message)
+        records=[]
+
+    return render(request,"govt_monitors.html",{"records": rr_records})
+
+def logout(request):
+    request.session["flag"] = 0
+    return redirect("home")
