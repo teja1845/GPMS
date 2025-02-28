@@ -990,7 +990,9 @@ def govt_monitors(request):
 def logout(request):
     request.session["flag"] = 0
     return redirect("home")
-
+def logot(request):
+    request.session["flag"] = 0
+    return redirect("home")
 
 
 def out(request):
