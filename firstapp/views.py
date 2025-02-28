@@ -431,4 +431,49 @@ def mycertificates(request):
     logging.debug("Rendering certificates.html with records.")
     return render(request, "mycertificates.html", {"records": records})
 
+def previousTransactions(request):
+
+    tax_id = request.GET.get("tax_id")
+    logging.debug(f"TAX ID = {tax_id}")
+
+    if  request.session.get("flag") != 1:
+        messages.error(request, "you are not logged in")
+        return redirect('login')
+    
+    try:
+        logging.debug("Connecting to the database...")
+        conn = get_db_connection()
+        cur = conn.cursor()
+        logging.debug("Database connection established.")
+        
+
+        # Fetch the certificate id, certificate type, issued date, event type 
+        query = """
+        SELECT transaction_id,trnsc_date,amount_paid
+        FROM transaction_history
+        WHERE tax_id = %s;
+        """
+        logging.debug(f"Executing query: {query}")
+        cur.execute(query, (tax_id,))
+        data = cur.fetchall()
+        logging.debug(f"Query executed successfully. Retrieved {len(data)} records.")
+
+        cur.close()
+        conn.close()
+        logging.debug("Database connection closed.")
+        # Convert data into a list of dictionaries
+        column_names = ["transaction_id","trnsc_date", "amount_paid" ]
+        records = [dict(zip(column_names, row)) for row in data]
+        
+        logging.debug(f"Processed records: {records}")  # Debugging Output
+
+    except psycopg2.Error as e:
+        error_message = f"Database error: {e}"
+        logging.error(error_message)  # Log the error
+        messages.error(request, error_message)
+        records = []
+
+    logging.debug("Rendering certificates.html with records.")
+    return render(request, "previousTransactions.html", {"records": records})
+
 

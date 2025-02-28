@@ -11,6 +11,7 @@ urlpatterns = [
      path('citizens/mycertificates',views.mycertificates,name = 'mycertificates'),
      path('panchayat_employees',views.panemp,name='panchayat_employees'),
      path('citizens/paymentPage/',views.citizenPayments,name='citizenPayments'),
+     path('citizens/previousTransactions/',views.previousTransactions,name='previousTransactions'),
 
      
 ]
