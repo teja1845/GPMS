@@ -246,6 +246,53 @@ def panemp(request):
         cur.execute(query)
         txn_data = cur.fetchall()
 
+        #query to scheme members 
+        query = """
+        SELECT 
+            ws.scheme_id,
+            ws.nm AS scheme_name,
+            STRING_AGG(c.nm, ', ') AS members
+        FROM 
+            welfare_scheme ws
+        LEFT JOIN 
+            scheme_enrollment se ON ws.scheme_id = se.scheme_id
+        LEFT JOIN 
+            citizens c ON se.citizen_id = c.ID
+        GROUP BY 
+            ws.scheme_id, ws.nm
+        ORDER BY 
+            ws.scheme_id;
+        """
+        cur.execute(query)
+        sch_data = cur.fetchall()
+
+        #query to schemes
+        query = """
+        SELECT scheme_id,nm 
+        FROM welfare_scheme
+        """
+        cur.execute(query)
+        wel_sch_data = cur.fetchall()
+
+        #query to assets 
+        query = """
+        SELECT 
+            a.ID AS asset_id,
+            a.type_a AS asset_type,
+            a.locn AS asset_location,
+            COALESCE(SUM(ae.amount_spent), 0) AS total_expenditure
+        FROM 
+            assets a
+        LEFT JOIN 
+            assets_expenditure ae ON a.ID = ae.assetID
+        GROUP BY 
+            a.ID, a.type_a, a.locn
+        ORDER BY 
+            a.ID;
+        """
+        cur.execute(query)
+        ast_data = cur.fetchall()
+
         cur.close()
         conn.close()
         # logging.debug("Database connection closed.")
@@ -263,7 +310,15 @@ def panemp(request):
         
         txn_column_names=["sno","tax_id","ctzn_id","name","tax_type","total_amount","due"]
         txn_records = [{"sno": idx + 1, **dict(zip(txn_column_names[1:], row))} for idx, row in enumerate(txn_data)]
+        
+        wel_sch_column_names=["sno","wel_id","wel_name"]
+        wel_records = [{"sno": idx + 1, **dict(zip(wel_sch_column_names[1:], row))} for idx, row in enumerate(wel_sch_data)]
 
+        sch_column_names=["sno","sch_id","sch_name","members"]
+        sch_records = [{"sno": idx + 1, **dict(zip(sch_column_names[1:], row))} for idx, row in enumerate(sch_data)]
+
+        ast_column_names=["sno","ast_id","ast_name","loc","exp"]
+        ast_records = [{"sno": idx + 1, **dict(zip(ast_column_names[1:], row))} for idx, row in enumerate(ast_data)]
         # logging.debug(f"Processed records: {records}")  # Debugging Output
 
     except psycopg2.Error as e:
@@ -272,7 +327,7 @@ def panemp(request):
         messages.error(request, error_message)
         records=[]
 
-    return render(request,"panchayat_employees.html",{"citizens_record":citizens_records,"land_records":land_records,"cer_records":cer_records,"tax_records":txn_records})
+    return render(request,"panchayat_employees.html",{"citizens_record":citizens_records,"land_records":land_records,"cer_records":cer_records,"tax_records":txn_records,"wel_records":wel_records,"sch_records":sch_records,"assets_records":ast_records})
 
 
 
