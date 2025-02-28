@@ -14,6 +14,8 @@ urlpatterns = [
      path('citizens/previousTransactions/',views.previousTransactions,name='previousTransactions'),
      path('citizens/land_records', views.land_records, name = 'land_records'),
      path('citizens/myschemes',views.citizenschemes,name = 'citizenschemes'),
+     path('citizens/profile',views.citizensProfile,name = 'citizensProfile'),
+     path('citizens/editprofile',views.editCitizenProfile,name = 'editCitizenProfile'),
      path('addcitizen',views.addcitizen,name="addcitizen"),
      
 ]
