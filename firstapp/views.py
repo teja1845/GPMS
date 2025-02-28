@@ -534,4 +534,55 @@ def land_records(request):
     logging.debug("Rendering land_records.html with records.")
     return render(request, "land_records.html", {"records": records})
 
+def citizenschemes(request):
+    logging.debug("citizenschemes view called.")
+
+    # **Check if the user is logged in (flag must be 1)**
+    if request.session.get("flag") != 1:
+        messages.error(request, "You must be logged in to view tax details.")
+        return redirect("login")  # Redirect to login page
+
+    # **Check if citizen_id exists in session**
+    citizen_id = request.session.get("id")
+    if not citizen_id:
+        messages.error(request, "Invalid session. Please log in again.")
+        return redirect("login")
+
+    try:
+        logging.debug(f"Fetching Schemes for citizen_id: {citizen_id}")
+
+        conn = get_db_connection()
+        cur = conn.cursor()
+
+        # **Corrected Query using parameterized SQL**
+        query = """
+        SELECT ws.nm,se.enrollment_date 
+        FROM scheme_enrollment se
+        JOIN welfare_scheme ws ON se.scheme_id=ws.scheme_id
+        JOIN citizens c ON se.citizen_id = c.id
+        WHERE c.id=%s;
+        """
+        cur.execute(query, (citizen_id,))
+        data = cur.fetchall()
+
+        cur.close()
+        conn.close()
+
+        logging.debug(f"Query executed successfully. Retrieved {len(data)} records.")
+
+        # **Convert data into a list of dictionaries with S.No**
+        column_names = ["nm","enrollment_date"]
+        records = [{"s_no": idx + 1, **dict(zip(column_names, row))} for idx, row in enumerate(data)]
+
+
+        logging.debug(f"Processed records: {records}")
+
+    except psycopg2.Error as e:
+        error_message = f"Database error: {e}"
+        logging.error(error_message)
+        messages.error(request, error_message)
+        records = []
+
+    return render(request, "citizenschemes.html", {"records": records})
+
 
