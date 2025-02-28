@@ -991,3 +991,8 @@ def logout(request):
     request.session["flag"] = 0
     return redirect("home")
 
+
+
+def out(request):
+    request.session["flag"] = 0
+    return redirect("home")
