@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Profile</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .form-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 400px;
+        }
+        h2 {
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="form-container">
+        <h2>Edit Profile</h2>
+        <form method="POST" action="{% url 'editCitizenProfile' %}">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label>Name:</label>
+                <input type="text" value="{{ citizen.citizen_name }}" disabled>
+            </div>
+
+            <div class="form-group">
+                <label>Username:</label>
+                <input type="text" value="{{ citizen.username }}" disabled>
+            </div>
+
+            <div class="form-group">
+                <label>Gender:</label>
+                <input type="text" value="{{ citizen.gender }}" disabled>
+            </div>
+
+            <div class="form-group">
+                <label>Date of Birth:</label>
+                <input type="text" value="{{ citizen.dob }}" disabled>
+            </div>
+
+            <div class="form-group">
+                <label for="education_qualification">Education Qualification:</label>
+                <select name="education_qualification" id="education_qualification" required>
+                    <option value="12th" {% if citizen.education_qualification == "12th" %}selected{% endif %}>12th</option>
+                    <option value="primary" {% if citizen.education_qualification == "primary" %}selected{% endif %}>primary</option>
+                    <option value="secondary" {% if citizen.education_qualification == "secondary" %}selected{% endif %}>secondary</option>
+                    <option value="illiterate" {% if citizen.education_qualification == "illiterate" %}selected{% endif %}>illiterate</option>
+                    <option value="10th" {% if citizen.education_qualification == "10th" %}selected{% endif %}>10th</option>
+                    <option value="Undergraduate" {% if citizen.education_qualification == "Undergraduate" %}selected{% endif %}>Undergraduate</option>
+                    <option value="Postgraduate" {% if citizen.education_qualification == "Postgraduate" %}selected{% endif %}>Postgraduate</option>
+                    <option value="Doctorate" {% if citizen.education_qualification == "Doctorate" %}selected{% endif %}>Doctorate</option>
+                    <option value="none" {% if citizen.education_qualification == "none" %}selected{% endif %}>none</option>
+                </select>
+            </div>
+            
+
+            <div class="form-group">
+                <label for="occupation">Occupation:</label>
+                <input type="text" name="occupation" value="{{ citizen.occupation }}">
+            </div>
+
+            <div class="form-group">
+                <label for="password">New Password (Leave blank if not changing):</label>
+                <input type="password" name="password">
+            </div>
+
+            <button type="submit">Save Changes</button>
+        </form>
+    </div>
+    <div>
+    <a href="{% url 'citizensProfile' %}" class="back-button">Back</a>
+    </div>
+</body>
+</html>

@@ -52,60 +52,67 @@
 
 <h2>Citizen Profile</h2>
 
+{% if records %}
 <table>
+    {% for record in records %}
     <tr>
         <th>Name</th>
-        <td>{{ records.0.citizen_name }}</td>
+        <td>{{ record.citizen_name }}</td>
     </tr>
     <tr>
         <th>Username</th>
-        <td>{{ records.0.username }}</td>
+        <td>{{ record.username }}</td>
     </tr>
     <tr>
         <th>Citizen ID</th>
-        <td>{{ records.0.citizen_id }}</td>
+        <td>{{ record.citizen_id }}</td>
     </tr>
     <tr>
         <th>Gender</th>
-        <td>{{ records.0.gender }}</td>
+        <td>{{ record.gender }}</td>
     </tr>
     <tr>
         <th>Date of Birth</th>
-        <td>{{ records.0.dob }}</td>
+        <td>{{ record.dob }}</td>
     </tr>
     <tr>
         <th>Education Qualifications</th>
-        <td>{{ records.0.education_qualifications }}</td>
+        <td>{{ record.education_qualifications }}</td>
     </tr>
     <tr>
         <th>Father's Name</th>
-        <td>{{ records.0.fathername }}</td>
+        <td>{{ record.fathername }}</td>
     </tr>
     <tr>
         <th>Mother's Name</th>
-        <td>{{ records.0.mothername }}</td>
+        <td>{{ record.mothername }}</td>
     </tr>
     <tr>
         <th>Spouse's Name</th>
-        <td>{{ records.0.spousename }}</td>
+        <td>{{ record.spousename }}</td>
     </tr>
     <tr>
         <th>Category</th>
-        <td>{{ records.0.category }}</td>
+        <td>{{ record.category }}</td>
     </tr>
     <tr>
         <th>Occupation</th>
-        <td>{{ records.0.occupation }}</td>
+        <td>{{ record.occupation }}</td>
     </tr>
     <tr>
         <th>Income</th>
-        <td>{{ records.0.income }}</td>
+        <td>{{ record.income }}</td>
     </tr>
+    {% endfor %}
 </table>
 
-<!-- <div class="button-container">
-    <a href="{% url 'editProfile'  %}" class="edit-button">Edit Profile</a>
-</div> -->
+<div class="button-container">
+    <a href="{% url 'editCitizenProfile' %}" class="edit-button">Edit Profile</a>
+</div>
+
+{% else %}
+<p>No records found.</p>
+{% endif %}
 
 </body>
 </html>

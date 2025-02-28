@@ -660,12 +660,12 @@ def citizensProfile(request):
         # Fetch the certificate id, certificate type, issued date, event type 
         query = """
         SELECT 
-        c.nm AS citizen_name, c.username, c.id, c.gender, c.dob, c.education_qualifications, f.nm AS father_name, 
+        c.nm AS citizen_name, c.username, c.id, c.gender, c.dob, c.education_qualification, f.nm AS father_name, 
         m.nm AS mother_name, s.nm AS spouse_name, c.category, c.occupation, c.income
         FROM citizens c
-        LEFT JOIN citizens f ON c.father_id = f.id
-        LEFT JOIN citizens m ON c.mother_id = m.id
-        LEFT JOIN citizens s ON c.spouse_id = s.id
+        LEFT JOIN citizens f ON c.father = f.id
+        LEFT JOIN citizens m ON c.mother = m.id
+        LEFT JOIN citizens s ON c.spouse = s.id
         WHERE c.id = %s;
         """
         logging.debug(f"Executing query: {query}")
@@ -691,5 +691,99 @@ def citizensProfile(request):
 
     logging.debug("Rendering citizenProfile.html with records.")
     return render(request, "citizenProfile.html", {"records": records})
+
+from django.shortcuts import render, redirect
+from django.contrib import messages
+import psycopg2
+import logging
+from django.contrib.auth.hashers import make_password
+
+def editCitizenProfile(request):
+    citizen_id = request.session.get("id")
+
+    if not citizen_id:
+        messages.error(request, "You are not logged in.")
+        return redirect("login")
+
+    try:
+        logging.debug("Connecting to the database...")
+        conn = get_db_connection()
+        cur = conn.cursor()
+        logging.debug("Database connection established.")
+
+        # Fetch existing citizen details
+        query = """
+        SELECT 
+        c.nm AS citizen_name, c.username, c.id, c.gender, c.dob, 
+        c.education_qualification, c.occupation
+        FROM citizens c
+        WHERE c.id = %s;
+        """
+        logging.debug(f"Executing query: {query}")
+        cur.execute(query, (citizen_id,))
+        data = cur.fetchone()  # ✅ Fetch one row only
+        logging.debug(f"Query executed successfully. Retrieved record: {data}")
+
+        cur.close()
+        conn.close()
+        logging.debug("Database connection closed.")
+
+        if not data:
+            messages.error(request, "Citizen not found.")
+            return redirect("citizensProfile")
+
+        # ✅ Convert to dictionary
+        column_names = ["citizen_name", "username", "citizen_id", "gender", "dob", "education_qualification", "occupation"]
+        citizen_data = dict(zip(column_names, data))
+
+    except psycopg2.Error as e:
+        logging.error(f"Database error: {e}")
+        messages.error(request, f"Database error: {e}")
+        return redirect("citizensProfile")
+
+    # ✅ If GET request, render form with existing data
+    if request.method == "GET":
+        return render(request, "editCitizenProfile.html", {"citizen": citizen_data})
+
+    # ✅ If POST request, update the database
+    elif request.method == "POST":
+        education_qualification = request.POST.get("education_qualification")
+        occupation = request.POST.get("occupation")
+        new_password = request.POST.get("password")
+
+        try:
+            conn = get_db_connection()
+            cur = conn.cursor()
+
+            update_query = """
+            UPDATE citizens
+            SET education_qualification = %s, occupation = %s
+            WHERE id = %s;
+            """
+            values = (education_qualification, occupation, citizen_id)
+
+            logging.debug(f"Executing update query: {update_query} with values {values}")
+            cur.execute(update_query, values)
+
+            # ✅ Update password only if provided
+            if new_password:
+                hashed_password = make_password(new_password)
+                cur.execute("UPDATE citizens SET passwd = %s WHERE id = %s;", (hashed_password, citizen_id))
+
+            conn.commit()
+            cur.close()
+            conn.close()
+            logging.debug("Citizen profile updated successfully.")
+
+            messages.success(request, "Profile updated successfully!")
+            return redirect("citizensProfile")  # Redirect back to profile page
+
+        except psycopg2.Error as e:
+            conn.rollback()  # Rollback on failure
+            logging.error(f"Database error: {e}")
+            messages.error(request, f"Database error: {e}")
+            return redirect("editCitizenProfile")
+
+    return render(request, "editCitizenProfile.html", {"citizen": citizen_data})
 
 

@@ -15,6 +15,7 @@ urlpatterns = [
      path('citizens/land_records', views.land_records, name = 'land_records'),
      path('citizens/myschemes',views.citizenschemes,name = 'citizenschemes'),
      path('citizens/profile',views.citizensProfile,name = 'citizensProfile'),
+     path('citizens/editprofile',views.editCitizenProfile,name = 'editCitizenProfile'),
 
      
 ]
