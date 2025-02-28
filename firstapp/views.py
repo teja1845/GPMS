@@ -786,6 +786,8 @@ def editCitizenProfile(request):
 
     return render(request, "editCitizenProfile.html", {"citizen": citizen_data})
 
+
+
 def govt_monitors(request):
     if  request.session.get("flag") != 1:
         messages.error(request, "you are not logged in")
@@ -864,17 +866,57 @@ def govt_monitors(request):
         rev_rep_data = cur.fetchall()
         # logging.debug(f"Query executed successfully. Retrieved {len(data)} records.")
         
+        query="""
+        WITH years AS (
+        SELECT DISTINCT EXTRACT(YEAR FROM se.enrollment_date) AS year
+        FROM scheme_enrollment se
+        UNION
+        SELECT DISTINCT EXTRACT(YEAR FROM CURRENT_DATE) -- To include the current year
+        ),
+
+        schemes AS (
+        SELECT nm, scheme_id
+        FROM welfare_scheme
+        ),
+
+        all_combinations AS (
+        SELECT y.year, s.nm, s.scheme_id
+        FROM years y
+        CROSS JOIN schemes s
+        ),
+
+        enrollments AS (
+        SELECT EXTRACT(YEAR FROM se.enrollment_date) AS year, 
+        COUNT(se.citizen_id) AS No_Of_citizens, 
+        se.scheme_id
+        FROM scheme_enrollment se
+        GROUP BY year, se.scheme_id
+        )
+
+        SELECT ac.year, ac.nm AS Scheme_Name, COALESCE(e.No_Of_citizens, 0) AS No_Of_citizens
+        FROM all_combinations ac
+        LEFT JOIN enrollments e ON ac.year = e.year AND ac.scheme_id = e.scheme_id
+        ORDER BY ac.year, ac.nm;
+
+        """
+
+        cur.execute(query)
+        welfare_data = cur.fetchall()
+
         rr_column_names = ["year","salaries", "asset_exp", "tax","scrap","scheme","net_amount"]
         rr_records = [{"s_no": idx + 1, **dict(zip(rr_column_names, row))} for idx, row in enumerate(rev_rep_data)]
-      
+        welf_column_names = ["year","scheme_name", "no_of_citizens"]
+        welf_records = [{"s_no": idx + 1, **dict(zip(welf_column_names, row))} for idx, row in enumerate(welfare_data)]
     except psycopg2.Error as e:
         error_message = f"Database error: {e}"
         logging.error(error_message)  # Log the error
         messages.error(request, error_message)
         records=[]
 
-    return render(request,"govt_monitors.html",{"records": rr_records})
+    return render(request,"govt_monitors.html",{"records": rr_records,"welf_records":welf_records})
+
 
 def logout(request):
     request.session["flag"] = 0
     return redirect("home")
+
