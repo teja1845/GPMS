@@ -24,5 +24,6 @@ urlpatterns = [
      path('issuecertificate',views.issuecertificate,name="issuecertificate"),
      path('enrolltoschemes',views.enrolltoschemes,name="enrolltoschemes"),
      path('addschemes',views.addschemes,name="addschemes"),
-     
+     path('addassets',views.addassets,name="addassets"),
+     path('addhousehold',views.addhousehold,name="addhousehold"),
 ]

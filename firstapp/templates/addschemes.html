@@ -73,19 +73,22 @@
                 <input type="text" id="scheme_name" name="scheme_name" required>
             </div>
             <div class="form-group">
-                <label for="eligible_age_start">Eligible Age Start (DOB)</label>
-                <input type="date" id="eligible_age_start" name="eligible_age_start" required>
+                <label for="eligible_age_start">Eligible Age Start (Years)</label>
+                <input type="number" id="eligible_age_start" name="eligible_age_start" min="0" required>
             </div>
+            
             <div class="form-group">
-                <label for="eligible_age_end">Eligible Age End (DOB)</label>
-                <input type="date" id="eligible_age_end" name="eligible_age_end" required>
+                <label for="eligible_age_end">Eligible Age End (Years)</label>
+                <input type="number" id="eligible_age_end" name="eligible_age_end" min="0" required>
             </div>
+            
             <div class="form-group">
                 <label for="eligible_gender">Eligible Gender</label>
                 <select id="eligible_gender" name="eligible_gender" required>
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
                     <option value="Other">Other</option>
+                    <option value="Any">Any</option>
                 </select>
             </div>
             <div class="form-group">
