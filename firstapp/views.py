@@ -1307,6 +1307,121 @@ def govt_monitors(request):
 
     return render(request,"govt_monitors.html",{"records": rr_records,"welf_records":welf_records})
 
+def Admin(request):
+    # logging.debug("admin is requested")
+    return render(request,"Admin.html")
+
+def addGovtMonitor_admin(request):
+    logging.debug("addgovtMonitor_admin view called.")
+    
+    # Check if the user is logged in (flag must be 1)
+    if request.session.get("flag") != 1:
+        messages.error(request, "You must be logged in to add a citizen.")
+        return redirect("login")
+    
+    if request.method == "POST":
+        name = request.POST.get("nm")
+        
+        
+        try:
+            logging.debug("Attempting to connect to the database...")
+            conn = get_db_connection()
+            cur = conn.cursor()
+            logging.debug("Database connection established.")
+            
+            
+            query = """
+                INSERT INTO govt_monitors (nm,stat,username,passwd )
+                VALUES (%s,%s,NULL,NULL);
+            """
+            
+            values = (name,"active")
+            logging.debug(f"Executing SQL Query: {query} with values {values}")
+            
+            cur.execute(query, values)
+            conn.commit()
+            logging.debug("Transaction committed successfully.")
+            
+            cur.close()
+            conn.close()
+            logging.debug("Database connection closed.")
+            messages.success(request, "Citizen added successfully.")
+            return redirect("Admin")  # Redirect to admin dashboard after success
+            
+        except psycopg2.Error as e:
+            conn.rollback()
+            logging.error(f"Database error: {e}")
+            messages.error(request, f"Database error: {e}")
+            
+        except ValueError as e:
+            logging.error(f"Value error: {e}")
+            messages.error(request, "Invalid data format.")
+            
+        finally:
+            if cur:
+                cur.close()
+            if conn:
+                conn.close()
+            
+    return render(request, "addGovtMonitor_admin.html")
+
+def addemployee_admin(request):
+    logging.debug("addcitizen_admin view called.")
+    
+    # Check if the user is logged in (flag must be 1)
+    if request.session.get("flag") != 1:
+        messages.error(request, "You must be logged in to add a citizen.")
+        return redirect("login")
+    
+    if request.method == "POST":
+        citizen_id = request.POST.get("citizen_id")
+        job_role = request.POST.get("job_role")
+        salary = request.POST.get("salary")
+
+        try:
+            logging.debug("Attempting to connect to the database...")
+            conn = get_db_connection()
+            cur = conn.cursor()
+            logging.debug("Database connection established.")
+            
+            # Convert empty strings to NULL for optional fields
+            salary = float(salary) if salary else None
+
+            query = """
+                INSERT INTO panchayat_employees (citizen_id, job_role, salary, username, passwd, stat)
+                VALUES (%s, %s, %s, NULL, NULL,'Active');
+            """
+            
+            values = (citizen_id, job_role, salary)
+            logging.debug(f"Executing SQL Query: {query} with values {values}")
+            
+            cur.execute(query, values)
+            conn.commit()
+            logging.debug("Transaction committed successfully.")
+            
+            cur.close()
+            conn.close()
+            logging.debug("Database connection closed.")
+            messages.success(request, "Citizen added successfully.")
+            return redirect("Admin")  # Redirect to admin dashboard after success
+            
+        except psycopg2.Error as e:
+            conn.rollback()
+            logging.error(f"Database error: {e}")
+            messages.error(request, f"Database error: {e}")
+            
+        except ValueError as e:
+            logging.error(f"Value error: {e}")
+            messages.error(request, "Invalid data format.")
+            
+        finally:
+            if cur:
+                cur.close()
+            if conn:
+                conn.close()
+            
+    return render(request, "addemployee_admin.html")
+
 
 def logout(request):
     request.session["flag"] = 0

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Employee</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Add Employee Details</h2>
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="citizen_id">Citizen ID</label>
+                <input type="number" class="form-control" id="citizen_id" name="citizen_id" placeholder="Enter Citizen ID" required>
+            </div>
+            <div class="form-group">
+                <label for="job_role">Job Role</label>
+                <input type="text" class="form-control" id="job_role" name="job_role" placeholder="Enter Job Role" required>
+            </div>
+            <div class="form-group">
+                <label for="salary">Salary</label>
+                <input type="number" class="form-control" id="salary" name="salary" placeholder="Enter Salary" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Add Employee</button>
+            <button type="button" class="back-btn" onclick="window.history.back();">Back</button>
+        </form>
+    </div>
+</body>
+</html>

@@ -24,5 +24,8 @@ urlpatterns = [
      path('issuecertificate',views.issuecertificate,name="issuecertificate"),
      path('enrolltoschemes',views.enrolltoschemes,name="enrolltoschemes"),
      path('addschemes',views.addschemes,name="addschemes"),
+     path('Admin', views.Admin, name = 'Admin'),
+     path('Admin/addGovtMonitor_admin', views.addGovtMonitor_admin, name = 'addGovtMonitor_admin'),
+     path('Admin/addemployee_admin', views.addemployee_admin, name = 'addemployee_admin'),
      
 ]

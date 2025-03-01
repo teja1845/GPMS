@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Govt Monitor (Admin)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Changed to flex-start to push it from the top */
+            height: 100vh;
+            padding-top: 20px; /* Added padding at the top to ensure form visibility */
+        }
+        .addctzn-container {
+            background-color: white;
+            padding: 30px 50px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 400px;
+            min-height: 80vh; /* Ensures form container has a minimum height */
+            overflow-y: auto; /* Allows scrolling if content overflows */
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .back-btn {
+            width: 50%;
+            background-color: red;
+            margin-left: 10px;
+        }
+        .back-btn:hover {
+            background-color: rgb(215, 3, 3);
+        }
+        .btncls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="addctzn-container">
+        <h2>Add Govt Monitor details Details</h2>
+        <form method="POST" action="{% url 'addGovtMonitor_admin' %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="nm">Name:</label>
+                <input type="text" id="nm" name="nm" required>
+            </div>
+            
+            <div class="btncls">
+                <button type="submit">Add Government Monitor</button>
+                <button type="button" class="back-btn" onclick="window.history.back();">Back</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
