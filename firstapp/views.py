@@ -1841,7 +1841,55 @@ def govt_monitors(request):
 
 def Admin(request):
     # logging.debug("admin is requested")
-    return render(request,"Admin.html")
+    if  request.session.get("flag") != 1:
+        messages.error(request, "you are not logged in")
+        return redirect('login')
+    if  request.session.get("user_type") != "Admin":
+        messages.error(request, "you are not an Admin .Login as Admin")
+        return redirect('login')
+    try:
+        logging.debug("Connecting to the database...")
+        conn = get_db_connection()
+        cur = conn.cursor()
+        logging.debug("Database connection established.")
+
+        # Fetch revenue report
+        query = """
+        SELECT id,nm,stat
+        FROM govt_monitors
+
+        """
+        logging.debug(f"Executing query: {query}")
+        cur.execute(query)
+        govt_monitors_data = cur.fetchall()
+        logging.debug(f"Query executed successfully. Retrieved {len(govt_monitors_data)} records.")
+
+        query = """
+        SELECT p.id,nm,job_role,stat
+        FROM panchayat_employees as p,citizens
+        WHERE p.citizen_id = citizens.id
+
+        """
+        # logging.debug(f"Executing query: {query}")
+        cur.execute(query)
+        panchayat_employees_data = cur.fetchall()
+        # logging.debug(f"Query executed successfully. Retrieved {len(data)} records.")
+        
+        GM_column_names = ["id","name","status"]
+        GM_records = [{"s_no": idx + 1, **dict(zip(GM_column_names, row))} for idx, row in enumerate(govt_monitors_data)]
+        
+        PE_column_names = ["id","name","job_role","status"]
+        PE_records = [{"s_no": idx + 1, **dict(zip(PE_column_names, row))} for idx, row in enumerate(panchayat_employees_data)]
+       
+    except psycopg2.Error as e:
+        error_message = f"Database error: {e}"
+        logging.error(error_message)  # Log the error
+        messages.error(request, error_message)
+        records=[]
+
+    return render(request,"Admin.html",{"GM_records": GM_records,"PE_records":PE_records})
+
+   
 
 def addGovtMonitor_admin(request):
     logging.debug("addgovtMonitor_admin view called.")
@@ -1953,6 +2001,187 @@ def addemployee_admin(request):
                 conn.close()
             
     return render(request, "addemployee_admin.html")
+
+def inactiveGM(request):
+    # logging.debug("admin is requested")
+    if  request.session.get("flag") != 1:
+        messages.error(request, "you are not logged in")
+        return redirect('login')
+    if  request.session.get("user_type") != "Admin":
+        messages.error(request, "you are not an Admin .Login as Admin")
+        return redirect('login')
+    
+    id = request.GET.get("GM_id")
+    try:
+        logging.debug("Connecting to the database...")
+        conn = get_db_connection()
+        cur = conn.cursor()
+        logging.debug("Database connection established.")
+
+        # Fetch revenue report
+        query = """
+        UPDATE govt_monitors
+        SET stat = 'inactive'
+        WHERE id = %s
+
+        """
+        logging.debug(f"Executing query: {query}")
+        cur.execute(query,(id,))
+        conn.commit()
+
+        cur.close()
+        conn.close()
+        logging.debug("Database connection closed.")
+
+        messages.success(request, "Government Monitor set to inactive successfully!")
+        
+
+        
+    except psycopg2.Error as e:
+        error_message = f"Database error: {e}"
+        logging.error(error_message)  # Log the error
+        messages.error(request, error_message)
+        records=[]
+
+    return redirect("Admin")
+
+def inactivePE(request):
+    if  request.session.get("flag") != 1:
+        messages.error(request, "you are not logged in")
+        return redirect('login')
+    if  request.session.get("user_type") != "Admin":
+        messages.error(request, "you are not an Admin .Login as Admin")
+        return redirect('login')
+    
+    id = request.GET.get("PE_id")
+    try:
+        logging.debug("Connecting to the database...")
+        conn = get_db_connection()
+        cur = conn.cursor()
+        logging.debug("Database connection established.")
+
+        # Fetch revenue report
+        query = """
+        UPDATE panchayat_employees
+        SET stat = 'inactive'
+        WHERE id = %s
+
+        """
+        logging.debug(f"Executing query: {query}")
+        cur.execute(query,(id,))
+        conn.commit()
+
+        cur.close()
+        conn.close()
+        logging.debug("Database connection closed.")
+
+        messages.success(request, "Panchayat employee set to inactive successfully!")
+        
+
+        
+    except psycopg2.Error as e:
+        error_message = f"Database error: {e}"
+        logging.error(error_message)  # Log the error
+        messages.error(request, error_message)
+        records=[]
+
+    return redirect("Admin")
+
+def updateLandRecord(request):
+    if request.session.get("flag") != 1:
+        messages.error(request, "You must be logged in to add a citizen.")
+        return redirect("login")
+    
+    land_id = request.GET.get("land_id")  # Get land_id from URL query params
+
+    if request.method == "POST":
+        year = request.POST.get("year")
+        crop_type = request.POST.get("crop_type")
+
+        logging.debug(f"Updating land record for land_id={land_id}, year={year}, crop_type={crop_type}")
+
+        if not year or not crop_type:
+            messages.error(request, "Please fill in all fields.")
+            return redirect(f'updateLandRecord/?land_id={land_id}')
+
+        try:
+            conn = get_db_connection()
+            cur = conn.cursor()
+            logging.debug("Database connection established.")
+
+            # **SQL Update Statement for agricultural_records**
+            query = """
+            INSERT INTO agricultural_records(yr, crop_type, land_id)
+            VALUES
+            (%s, %s, %s);
+            """
+
+            logging.debug(f"Executing SQL Query: {query}")
+            cur.execute(query, (year, crop_type, land_id))
+            conn.commit()
+            logging.debug("Record updated successfully.")
+
+            cur.close()
+            conn.close()
+            logging.debug("Database connection closed.")
+
+            messages.success(request, "Land record updated successfully!")
+            return redirect("land_records")  # Redirect to land records page
+
+        except psycopg2.Error as e:
+            conn.rollback()  # Rollback in case of error
+            logging.error(f"Database error: {e}")
+            messages.error(request, f"Database error: {e}")
+            return redirect(f'updateLandRecord/?land_id={land_id}')
+
+    return render(request, "updateLandRecord.html", {"land_id": land_id})
+
+def crop_history(request):
+    land_id = request.GET.get("land_id")  # Get the land_id from the query parameters
+    logging.debug(f"LAND ID = {land_id}")
+
+    # Check if the user is logged in
+    if request.session.get("flag") != 1:
+        messages.error(request, "You are not logged in.")
+        return redirect('login')
+
+    try:
+        logging.debug("Connecting to the database...")
+        conn = get_db_connection()
+        cur = conn.cursor()
+        logging.debug("Database connection established.")
+        
+        # Fetch year and crop type based on land_id
+        query = """
+        SELECT yr, crop_type
+        FROM agricultural_records
+        WHERE land_id = %s
+        ORDER BY yr;
+        """
+        logging.debug(f"Executing query: {query}")
+        cur.execute(query, (land_id,))
+        data = cur.fetchall()
+        logging.debug(f"Query executed successfully. Retrieved {len(data)} records.")
+
+        cur.close()
+        conn.close()
+        logging.debug("Database connection closed.")
+
+        # Convert data into a list of dictionaries
+        column_names = ["yr", "crop_type"]
+        records = [dict(zip(column_names, row)) for row in data]
+        
+        logging.debug(f"Processed records: {records}")  # Debugging Output
+
+    except psycopg2.Error as e:
+        error_message = f"Database error: {e}"
+        logging.error(error_message)  # Log the error
+        messages.error(request, error_message)
+        records = []
+
+    logging.debug("Rendering crop_history.html with records.")
+    return render(request, "crop_history.html", {"records": records})
+
 
 def updateLand(request):
     records = {}

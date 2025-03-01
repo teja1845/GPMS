@@ -78,6 +78,8 @@
         <div class="column">Area (Acres)</div>
         <div class="column">Type of Land</div>
         <div class="column">Co-Owners</div>
+        <div class="column">Updations</div>
+        <div class="column">Crop records</div>
     </div>
 
     {% for record in records %}
@@ -94,6 +96,19 @@
         <div class="column">
             <p>{{ record.co_owners|default:"NULL" }}</p> <!-- Display NULL if no co-owners -->
         </div>
+        <div class="column">
+            <button class="update-btn" 
+                    onclick="location.href='updateLandRecord/?land_id={{ record.Land_id }}'" 
+                    {% if record.Type_of_land != "Agriculture" %} disabled class="disabled" {% endif %}>
+                Update
+            </button>
+        </div>
+        <div class = "column">
+            <td>
+                <button onclick="location.href='crop_history/?land_id={{ record.Land_id }}'">Crop Records</button>
+            </td>
+        </div>
+        
     </div>
     {% empty %}
     <div class="record">
