@@ -55,6 +55,8 @@
         </div>
         <input type="submit" value="Submit">
     </form>
+    <a href="{% if request.session.user_type == 'citizens' %}/citizens/tax_payments{% elif request.session.user_type == 'panchayat_employees' %}/panchayat_employees{% elif request.session.user_type == 'guest' %}/guest/home{% else %}/{% endif %}" class="back-button">Back</a>
+    </form>
 </div>
 
 </body>

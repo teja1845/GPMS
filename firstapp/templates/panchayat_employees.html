@@ -196,7 +196,7 @@
                             {% if record.due == 0 %}
                                 <button style="background-color: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px; margin-top: 10px;">Download</button>
                             {% else %}
-                                <button style="background-color: red; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px; margin-top: 10px;">Pay</button>
+                                <button onclick = "location.href ='citizens/paymentPage/?tax_id={{ record.tax_id }}'";  style="background-color: red; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px; margin-top: 10px;">Pay</button>
                             {% endif %}
                         </td>
                     </tr>

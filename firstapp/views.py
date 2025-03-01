@@ -774,11 +774,12 @@ def citizenPayments(request):
     if request.method == "POST":
         amount = request.POST.get("amount")
         tax_id = request.POST.get("tax_id")  # Get tax_id from POST request
-        citizen_id = request.session.get("id")  # Get citizen_id from session
+        id = request.session.get("id")  # Get citizen_id from session
+        type = request.session.get("user_type")
 
-        logging.debug(f"Received Amount: {amount}, Tax ID: {tax_id}, Citizen ID: {citizen_id}")
+        logging.debug(f"Received Amount: {amount}, Tax ID: {tax_id},  ID: {id}")
 
-        if not citizen_id:
+        if not id:
             messages.error(request, "You must be logged in to make a payment.")
             logging.warning("Unauthorized access attempt: No citizen_id in session")
             return redirect("login")
@@ -796,22 +797,24 @@ def citizenPayments(request):
 
             # **SQL Transaction: Insert into transaction_history & Update payment_taxes**
             query = """
-            BEGIN;
+                BEGIN;
+    
+                 
+                INSERT INTO transaction_history ( amount_paid, trnsc_date, tax_id)
+                 VALUES ( %s, CURRENT_DATE, %s);
+    
+                -- Update the payment_taxes table
+                 UPDATE payment_taxes
+                SET due = due - %s
+                WHERE tax_id = %s;
 
-            INSERT INTO transaction_history (citizen_id, amount_paid, trnsc_date, tax_id)
-            VALUES (%s, %s, CURRENT_DATE, %s);
-
-            UPDATE payment_taxes
-            SET due = due - %s
-            WHERE citizen_id = %s AND tax_id = %s;
-
-            COMMIT;
-            """
+                COMMIT;
+                """
 
             logging.debug(f"Executing SQL Transaction:\n{query}")
-            logging.debug(f"Values: (citizen_id={citizen_id}, amount={amount}, tax_id={tax_id})")
+            logging.debug(f"Values: ( amount={amount}, tax_id={tax_id})")
 
-            cur.execute(query, (citizen_id, amount, tax_id, amount, citizen_id, tax_id))
+            cur.execute(query, ( amount, tax_id, amount,  tax_id))
             conn.commit()
             logging.debug("Transaction committed successfully.")
 
@@ -820,7 +823,10 @@ def citizenPayments(request):
             logging.debug("Database connection closed.")
 
             messages.success(request, "Payment recorded successfully!")
-            return redirect("citizenTaxes")  # Redirect to dashboard after payment
+            if type == "citizens":
+                return redirect("citizenTaxes")  # Redirect citizens to their tax payments page
+            elif type == "panchayat_employees":
+                return redirect("panchayat_employees")  # Redirect to dashboard after payment
 
         except psycopg2.Error as e:
             conn.rollback()  # Rollback in case of error
