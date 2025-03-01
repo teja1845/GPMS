@@ -128,7 +128,7 @@
                     <!-- Repeat for 4 more rows -->
                 </tbody>
             </table>
-            <button class="button">Add New Row</button>
+            <button class="button" onclick="location.href='addland'">Add New Row</button>
         </div>
     </div>
 
@@ -164,7 +164,7 @@
                     <!-- Repeat for 4 more rows -->
                 </tbody>
             </table>
-            <button class="button">Add New Row</button>
+            <button class="button" onclick="location.href='issuecertificate'">Issue Cerificate</button>
         </div>
     </div>
 
@@ -233,7 +233,7 @@
                     <!-- Repeat for 4 more rows -->
                 </tbody>
             </table>
-            <button class="button">Add Member</button>
+            <button class="button" onclick="location.href='enrolltoschemes'">Enroll members to scheme</button>
         </div>
     </div>
 
@@ -256,6 +256,7 @@
                         <td>{{ record.wel_id }}</td>
                         <td>{{ record.wel_name }}</td>
                         <td>
+                            <button style="background-color:rgb(248, 5, 5);" class="button">Delete</button>
                             <button style="background-color: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px; margin-top: 10px;">View</button>
                         </td>
                     </tr>
@@ -263,8 +264,8 @@
                     <!-- Repeat for 4 more rows -->
                 </tbody>
             </table>
-            <button class="button">Add</button>
-            <button class="button">Delete</button>
+            <button class="button" onclick="location.href='addschemes'">Add Scheme</button>
+            
         </div>
     </div>
 

@@ -6,11 +6,15 @@ from django.contrib import messages
 from datetime import datetime
 from django.contrib.auth.hashers import make_password,check_password
 import logging
+from datetime import date
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
+
+def get_issue_date():
+    return date.today()
 
 def home(request):
     request.session['flag'] = 0
@@ -424,6 +428,294 @@ def addcitizen(request):
                 conn.close()
             
     return render(request, "addcitizen.html")
+
+def addland(request):
+    logging.debug("addlandn view called.")
+    
+    # Check if the user is logged in (flag must be 1)
+    if request.session.get("flag") != 1:
+        messages.error(request, "You must be logged in to add a citizen.")
+        return redirect("login")
+    
+    if request.method == "POST":
+        area = float(request.POST.get("area_acres")) if request.POST.get("area_acres") else None
+        type_l = request.POST.get("type_l")
+        owner_citizen_id = request.POST.get("owner_citizen_id")
+        old_id = request.POST.get("old_id") or None
+        stat = "active"  # Set default status as "active"
+        from_date = date.today()
+        
+        try:
+            logging.debug("Attempting to connect to the database...")
+            conn = get_db_connection()
+            cur = conn.cursor()
+            logging.debug("Database connection established.")
+            
+            # Convert empty strings to NULL for optional fields
+            old_id = int(old_id) if old_id else None
+
+            if old_id:
+                cur.execute("SELECT id FROM land_acres WHERE id = %s;", (old_id,))
+                if not cur.fetchone():
+                    messages.error(request, "Invalid old_id reference.")
+                    return redirect("addland")
+
+            cur.execute("SELECT COUNT(*) FROM citizens WHERE id = %s;", (owner_citizen_id,))
+            if cur.fetchone()[0] == 0:
+                messages.error(request, "Owner Citizen ID does not exist.")
+                return redirect("panchayat_employees")
+            
+            addland_query = """
+                INSERT INTO land_acres (area_acres, type_l, old_id, stat)
+                VALUES (%s, %s, %s, %s)
+                RETURNING id;
+            """
+            
+            add_land_values = (area, type_l, old_id, stat)
+            logging.debug(f"Executing SQL Query: {addland_query} with values {add_land_values}")
+            
+            cur.execute(addland_query, add_land_values)
+            
+            id = cur.fetchone()
+            if id:
+                id = id[0]  # Extract the ID
+            else:
+                messages.error(request, "Failed to retrieve land ID.")
+                return redirect("panchayat_employees")
+            
+            conn.commit()
+            logging.debug("Transaction committed successfully.")
+            
+            insert_citizen_land_query = """
+                INSERT INTO land_ownership (land_id, citizen_id, from_date)
+                VALUES (%s, %s, %s);
+            """
+            
+            insert_citizen_land_values = (id, owner_citizen_id, from_date)
+            logging.debug(f"Executing SQL Query: {insert_citizen_land_query} with values {insert_citizen_land_values}")
+            
+            cur.execute(insert_citizen_land_query, insert_citizen_land_values)
+            conn.commit()
+            
+            
+            cur.close()
+            conn.close()
+            logging.debug("Database connection closed.")
+            messages.success(request, "land added successfully.")
+            return redirect("panchayat_employees")  # Redirect to home or another page after success
+            
+        except psycopg2.Error as e:
+            conn.rollback()
+            logging.error(f"Database error: {e}")
+            messages.error(request, f"Database error: {e}")
+            
+        except ValueError as e:
+            logging.error(f"Value error: {e}")
+            messages.error(request, "Invalid data format.")
+            
+        finally:
+            if cur:
+                cur.close()
+            if conn:
+                conn.close()
+            
+    return render(request, "addland.html")
+
+
+def issuecertificate(request):
+    logging.debug("issuecertificate view called.")
+    
+    # Check if the user is logged in (flag must be 1)
+    if request.session.get("flag") != 1:
+        messages.error(request, "You must be logged in to add a citizen.")
+        return redirect("login")
+    
+    if request.method == "POST":
+        type_cer = request.POST.get("certificate_type")
+        issue_date = date.today()
+        event_date = request.POST.get("event_date")
+        citizen_id = request.POST.get("citizen_id")
+
+
+        try:
+            logging.debug("Attempting to connect to the database...")
+            conn = get_db_connection()
+            cur = conn.cursor()
+            logging.debug("Database connection established.")
+            
+            cur.execute("SELECT COUNT(*) FROM citizens WHERE id = %s;", (citizen_id,))
+            if cur.fetchone()[0] == 0:
+                messages.error(request, "Citizen ID does not exist.")
+                return redirect("panchayat_employees")
+
+            insert_certificate_query = """
+                INSERT INTO certificates (type, issue_date, event_date)
+                VALUES (%s, %s, %s)
+                RETURNING certificate_id;
+            """
+            
+            cer_values = (type_cer, issue_date, event_date)
+            logging.debug(f"Executing SQL Query: {insert_certificate_query} with values {cer_values}")
+            
+            cur.execute(insert_certificate_query, cer_values)
+            certificate_id = cur.fetchone()
+            if certificate_id:
+                certificate_id = certificate_id[0]  # Extract the ID
+            else:
+                messages.error(request, "Failed to retrieve certificate ID.")
+                return redirect("panchayat_employees")
+            
+            conn.commit()
+            
+            insert_citizen_certificate_query = """
+                INSERT INTO citizen_certificate (citizen_id, certificate_id)
+                VALUES (%s, %s);
+            """
+            
+            cer_ctzn_values = (citizen_id, certificate_id)
+            logging.debug(f"Executing SQL Query: {insert_citizen_certificate_query} with values {cer_ctzn_values}")
+            
+            cur.execute(insert_citizen_certificate_query, cer_ctzn_values)
+            conn.commit()
+            
+            logging.debug("Transaction committed successfully.")
+            
+            cur.close()
+            conn.close()
+            logging.debug("Database connection closed.")
+            messages.success(request, "certificate issued successfully.")
+            return redirect("panchayat_employees")  # Redirect to home or another page after success
+            
+        except psycopg2.Error as e:
+            conn.rollback()
+            logging.error(f"Database error: {e}")
+            messages.error(request, f"Database error: {e}")
+            
+        except ValueError as e:
+            logging.error(f"Value error: {e}")
+            messages.error(request, "Invalid data format.")
+            
+        finally:
+            if cur:
+                cur.close()
+            if conn:
+                conn.close()
+            
+    return render(request, "issuecertificate.html")
+
+def enrolltoschemes(request):
+    logging.debug("enrolltoschemes view called.")
+    
+    # Check if the user is logged in (flag must be 1)
+    if request.session.get("flag") != 1:
+        messages.error(request, "You must be logged in to add a citizen.")
+        return redirect("login")
+    
+    if request.method == "POST":
+        scheme_id = request.POST.get("scheme_id")
+        citizen_id = request.POST.get("citizen_id")
+        enrollment_date = date.today()
+        
+        try:
+            logging.debug("Attempting to connect to the database...")
+            conn = get_db_connection()
+            cur = conn.cursor()
+            logging.debug("Database connection established.")
+            
+            cur.execute("SELECT COUNT(*) FROM citizens WHERE id = %s and date_of_death is NULL;", (citizen_id,))
+            if cur.fetchone()[0] == 0:
+                messages.error(request, "Citizen ID does not exist or dead.")
+                return redirect("panchayat_employees")
+            
+            cur.execute("SELECT COUNT(*) FROM welfare_scheme WHERE scheme_id = %s;", (scheme_id,))
+            if cur.fetchone()[0] == 0:
+                messages.error(request, "scheme ID does not exist.")
+                return redirect("panchayat_employees")
+            
+            # **Check if citizen is already enrolled in the scheme in this year **
+            cur.execute(
+                """
+                SELECT COUNT(*) 
+                FROM scheme_enrollment 
+                WHERE citizen_id = %s 
+                  AND scheme_id = %s
+                  AND EXTRACT(YEAR FROM enrollment_date) = EXTRACT(YEAR FROM CURRENT_DATE);
+                """,
+                (citizen_id, scheme_id)
+
+            )
+            if cur.fetchone()[0] > 0:
+                messages.error(request, "Citizen is already enrolled in this scheme in this year.")
+                return redirect("panchayat_employees")
+            
+            # Check eligibility
+            eligibility_query = """
+                SELECT 
+                    c.id, c.nm, c.gender, c.occupation, c.income, 
+                    EXTRACT(YEAR FROM AGE(c.dob)) AS age,
+                    w.nm AS scheme_name, w.eligible_age_range, w.eligible_gender, 
+                    w.eligible_occupation, w.eligible_income, w.eligible_land_area 
+                FROM citizens c
+                JOIN welfare_scheme w ON w.scheme_id = %s
+                LEFT JOIN (
+                    SELECT lo.citizen_id, COALESCE(SUM(la.area_acres), 0.00) AS total_land_area
+                    FROM land_ownership lo
+                    JOIN land_acres la ON lo.land_id = la.id
+                    GROUP BY lo.citizen_id
+                ) land_data ON land_data.citizen_id = c.id
+                WHERE c.id = %s
+                AND EXTRACT(YEAR FROM AGE(c.dob)) BETWEEN 
+                    SPLIT_PART(w.eligible_age_range, '-', 1)::INTEGER 
+                    AND SPLIT_PART(w.eligible_age_range, '-', 2)::INTEGER
+                AND (w.eligible_gender = 'Any' OR w.eligible_gender = c.gender)
+                AND (w.eligible_occupation = 'Any' OR w.eligible_occupation = c.occupation)
+                AND (w.eligible_income = 0.00 OR c.income <= w.eligible_income)
+                AND (w.eligible_land_area = 0.00 OR land_data.total_land_area <= w.eligible_land_area);
+            """
+
+            cur.execute(eligibility_query, (scheme_id, citizen_id))
+            if not cur.fetchone():
+                messages.error(request, "Citizen is not eligible for the selected scheme.")
+                print("Citizen is not eligible for the selected scheme.")
+                return redirect("panchayat_employees")
+            
+            query = """
+                INSERT INTO scheme_enrollment (citizen_id, scheme_id, enrollment_date)
+                VALUES (%s, %s, %s);
+            """
+            
+            values = (citizen_id, scheme_id, enrollment_date)
+            logging.debug(f"Executing SQL Query: {query} with values {values}")
+            
+            cur.execute(query, values)
+            conn.commit()
+            logging.debug("Transaction committed successfully.")
+            
+            cur.close()
+            conn.close()
+            logging.debug("Database connection closed.")
+            messages.success(request, "Citizen enrolled to scheme successfully.")
+            return redirect("panchayat_employees")  # Redirect to home or another page after success
+            
+        except psycopg2.Error as e:
+            conn.rollback()
+            logging.error(f"Database error: {e}")
+            messages.error(request, f"Database error: {e}")
+            
+        except ValueError as e:
+            logging.error(f"Value error: {e}")
+            messages.error(request, "Invalid data format.")
+            
+        finally:
+            if cur:
+                cur.close()
+            if conn:
+                conn.close()
+            
+    return render(request, "enrolltoschemes.html")
+
+def addschemes(request):
+    return render(request, "addschemes.html")
 
 # View to fetch citizen's taxes
 def citizenTaxes(request):

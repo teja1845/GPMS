@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Welfare Scheme</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .addschemes-container {
+            background-color: white;
+            padding: 20px 40px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 350px;
+        }
+        h2 {
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .back-btn {
+            width: 50%;
+            background-color: red;
+            margin-left: 10px;
+        }
+        .back-btn:hover {
+            background-color: rgb(215, 3, 3);
+        }
+        .btncls {
+            display: flex;
+        }
+    </style>
+</head>
+<body>
+    <div class="addschemes-container">
+        <h2>Add Welfare Scheme</h2>
+        <form action="{% url 'addschemes' %}" method="POST">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="scheme_name">Scheme Name</label>
+                <input type="text" id="scheme_name" name="scheme_name" required>
+            </div>
+            <div class="form-group">
+                <label for="eligible_age_start">Eligible Age Start (DOB)</label>
+                <input type="date" id="eligible_age_start" name="eligible_age_start" required>
+            </div>
+            <div class="form-group">
+                <label for="eligible_age_end">Eligible Age End (DOB)</label>
+                <input type="date" id="eligible_age_end" name="eligible_age_end" required>
+            </div>
+            <div class="form-group">
+                <label for="eligible_gender">Eligible Gender</label>
+                <select id="eligible_gender" name="eligible_gender" required>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="eligible_occupation">Eligible Occupation</label>
+                <input type="text" id="eligible_occupation" name="eligible_occupation" required>
+            </div>
+            <div class="form-group">
+                <label for="eligible_income">Eligible Income</label>
+                <input type="number" step="0.01" id="eligible_income" name="eligible_income" required>
+            </div>
+            <div class="form-group">
+                <label for="eligible_land_area">Eligible Land Area</label>
+                <input type="number" step="0.01" id="eligible_land_area" name="eligible_land_area" required>
+            </div>
+            <div class="form-group">
+                <label for="scheme_amt">Scheme Amount</label>
+                <input type="number" step="0.01" id="scheme_amt" name="scheme_amt" required>
+            </div>
+            <div class="btncls">
+                <button type="submit">Submit</button>
+                <button class="back-btn" onclick="location.href='panchayat_employees'">Back</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
