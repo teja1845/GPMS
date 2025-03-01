@@ -30,4 +30,5 @@ urlpatterns = [
      path('addassets',views.addassets,name="addassets"),
      path('addhousehold',views.addhousehold,name="addhousehold"),
      path('updateCitizen/',views.updateCitizen,name="updateCitizen"),
+     path('updateLand/',views.updateLand,name="updateLand"),
 ]

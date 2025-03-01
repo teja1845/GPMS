@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Land Details Update</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .card {
+            max-width: 400px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 2px 2px 12px #aaa;
+        }
+        .card h2 {
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="text"],
+        input[type="date"] {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        input[type="submit"],
+        .back-button {
+            padding: 10px 15px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            display: inline-block;
+        }
+        input[type="submit"]:hover,
+        .back-button:hover {
+            background-color: #218838;
+        }
+        .back-button {
+            background-color: red; /* Blue color for back button */
+        }
+        .back-button:hover {
+            background-color: rgb(202, 8, 8); /* Darker blue on hover */
+        }
+        .radio-group {
+            display: flex;
+            gap: 20px; /* Space between radio buttons */
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Land Details</h2>
+    <p><strong>Land ID:</strong> {{ land.id }}</p>
+    <p><strong>Owner ID:</strong> {{ land.owner_id }}</p>
+    <p><strong>From Date:</strong> {{ land.from_date }}</p>
+    <p><strong>To Date:</strong> {{ land.to_date }}</p>
+
+    <h3>Update Details</h3>
+    <form action="{% url 'updateLand' %}" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="land_id" value="{{ request.GET.land_id }}">
+        {% with land as land %}
+        <div class="form-group">
+            <label>Select New Owner Type : </label>
+            <div class="radio-group">
+                <div>
+                    <input type="radio" id="newOwner" name="ownerType" value="new_owner" required>
+                    <label for="newOwner">New Owner</label>
+                </div>
+                <div>
+                    <input type="radio" id="mutualOwner" name="ownerType" value="mutual_owner" required>
+                    <label for="mutualOwner">Mutual Owner</label>
+                </div>
+            </div>
+        </div>
+        {% endwith %}
+
+        <div class="form-group">
+            <label for="owner_id">New Owner ID:</label>
+            <input type="text" id="owner_id" name="owner_id" placeholder="{{ land.owner_id }}" required>
+        </div>
+        
+        <input type="submit" value="Update">
+    </form>
+    
+    <button class="back-button" onclick="location.href='/panchayat_employees'">Back</button>
+</div>
+
+</body>
+</html>

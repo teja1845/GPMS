@@ -89,7 +89,7 @@
                         <td>{{ record.gender }}</td>
                         <td>{{ record.dob }}</td>
                         <td>
-                            <button onclick="location.href='updateCitizen/?ctzn_id={{ record.id }}'"s style="background-color: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px; margin-top: 10px;" >Update</button>
+                            <button onclick="location.href='updateCitizen/?ctzn_id={{ record.id }}'" style="background-color: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px; margin-top: 10px;" >Update</button>
                         </td>
                     </tr>
                     {% endfor %}
@@ -122,7 +122,7 @@
                         <td>{{ record.id }}</td>
                         <td>{{ record.type }}</td>
                         <td>{{ record.list_owners }}</td>
-                        <td><button style="background-color: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px; margin-top: 10px;">Update</button></td>
+                        <td><button onclick="location.href='updateLand/?land_id={{ record.id }}'" style="background-color: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px; margin-top: 10px;">Update</button></td>
                     </tr>
                     {% endfor %}
                     <!-- Repeat for 4 more rows -->

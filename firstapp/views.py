@@ -220,6 +220,7 @@ def panemp(request):
         FROM land_acres la
         LEFT JOIN land_ownership lo on la.ID=lo.land_id
         LEFT JOIN citizens c on lo.citizen_id=c.ID
+        WHERE lo.to_date IS NULL
         GROUP BY la.ID,la.type_l;
         """
         # logging.debug(f"Executing query: {query}")
@@ -1953,7 +1954,117 @@ def addemployee_admin(request):
             
     return render(request, "addemployee_admin.html")
 
+def updateLand(request):
+    records = {}
+    if request.method == "POST":
+        # Get form data from POST request
+        land_id=request.POST.get("land_id")
+        owner_type=request.POST.get("ownerType")
+        owner_id=request.POST.get("owner_id")
+        logging.debug(f"Received form data: {request.POST}")
 
+        # Validate input (ensure required fields are not empty)
+        if not all([land_id,owner_type]):
+            messages.error(request, "All fields are required.")
+            return redirect("panchayat_employees")
+
+        try:
+            conn = get_db_connection()
+            cur = conn.cursor()
+            logging.debug("Database connection established for UPDATE.")
+            if owner_type=="mutual_owner":
+                # Update query
+                update_query = """
+                    INSERT INTO land_ownership values
+                    (%s,%s,CURRENT_DATE,NULL);
+                """
+                cur.execute(update_query, (int(land_id),int(owner_id)))
+                conn.commit()
+
+                logging.debug(f"Database updated successfully for ID: {land_id}.")
+                messages.success(request, "Citizen profile updated successfully.")
+
+                # Close DB connection
+                cur.close()
+                conn.close()
+                logging.debug("Database connection closed after update.")
+
+                return redirect("panchayat_employees")  # Redirect after successful update
+            # Update query
+            update_query = """
+                BEGIN;
+                UPDATE land_ownership
+                SET to_date=CURRENT_DATE
+                WHERE land_id=%s;
+                INSERT INTO land_ownership
+                VALUES (%s,%s,CURRENT_DATE,NULL);
+                
+                COMMIT;
+            """
+            cur.execute(update_query, (land_id,land_id,owner_id,))
+            conn.commit()
+
+            logging.debug(f"Database updated successfully for ID: {land_id}.")
+            messages.success(request, "Land profile updated successfully.")
+
+            # Close DB connection
+            cur.close()
+            conn.close()
+            logging.debug("Database connection closed after update.")
+
+            return redirect("panchayat_employees")  # Redirect after successful update
+
+        except psycopg2.Error as e:
+            logging.error(f"Database update error: {e}")
+            messages.error(request, f"Database error: {e}")
+
+    elif request.method == "GET":
+        # Get ID from URL or fall back to session ID
+        id=request.GET.get("land_id")    
+        logging.debug(f"ID retrieved: {id} ")
+
+        if not id:
+            messages.error(request, "User ID not found in session or URL.")
+            logging.error("User ID not found in session or URL.")
+            return render(request, "updateCitizen.html", {"record": records})
+
+        try:
+            id = int(id)  # Ensure ID is an integer
+        except ValueError:
+            messages.error(request, "Invalid ID format.")
+            logging.error("Invalid ID format received.")
+            return render(request, "updateCitizen.html", {"record": records})
+
+            # If GET request, fetch the existing citizen data
+        try:
+            logging.debug("Connecting to the database for GET request...")
+            conn = get_db_connection()
+            cur = conn.cursor()
+
+            query = """
+                SELECT land_id,citizen_id,from_date,to_date
+                FROM land_ownership
+                WHERE land_id = %s;
+            """
+            logging.debug(f"Executing query: {query} with id: {id}")
+            cur.execute(query, (id,))  
+            c_data = cur.fetchone()  # Fetch a single row
+            logging.debug(f"Query executed successfully. Retrieved data: {c_data}")
+
+            if c_data:
+                c_columns = ["id", "owner_id", "from_date", "to_date"]
+                records = dict(zip(c_columns, c_data))
+                logging.debug(f"Final records sent to template: {records}")
+
+            cur.close()
+            conn.close()
+            logging.debug("Database connection closed.")
+
+        except psycopg2.Error as e:
+            logging.error(f"Database fetch error: {e}")
+            messages.error(request, f"Database error: {e}")
+        
+        return render(request, "updateLand.html", {"land": records})
 def logout(request):
     request.session["flag"] = 0
     return redirect("home")
