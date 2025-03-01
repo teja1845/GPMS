@@ -40,6 +40,31 @@
         input[type="submit"]:hover {
             background-color: #218838;
         }
+        .btn {
+            background-color: red; /* Background color */
+            text-decoration: none; /* Remove underline from link */
+            width: 20%; /* Width of the button */
+            padding: 10px; /* Padding for better spacing */
+            color: white; /* Text color */
+            border: none; /* Remove border */
+            border-radius: 5px; /* Rounded corners */
+            cursor: pointer; /* Pointer cursor on hover */
+            display: inline-block; /* Allow margin and padding */
+            text-align: center; /* Center text */
+            transition: background-color 0.3s; /* Smooth transition for hover effect */
+            margin-top: 5px;
+        }
+
+        .btn a {
+            color: white; /* Text color for the link */
+            display: block; /* Make the link fill the button */
+            height: 100%; /* Make the link fill the button height */
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            background-color: darkred; /* Darker red on hover */
+        }
     </style>
 </head>
 <body>
@@ -55,7 +80,9 @@
         </div>
         <input type="submit" value="Submit">
     </form>
-    <button  style="background-color: red; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px; margin-top: 10px;"  onclick="location.href='{% if request.session.user_type == 'citizens' %}/citizens/tax_payments{% elif request.session.user_type == 'panchayat_employees' %}/panchayat_employees{% elif request.session.user_type == 'guest' %}/guest/home{% else %}/{% endif %}'" class="back-button">Back</a>
+    <div class="btn">
+        <a href="{% if request.session.user_type == 'citizens' %}/citizens/tax_payments{% elif request.session.user_type == 'panchayat_employees' %}/panchayat_employees{% elif request.session.user_type == 'guest' %}/guest/home{% else %}/{% endif %}" >Back</a>
+    </div> 
     </form>
 </div>
 
