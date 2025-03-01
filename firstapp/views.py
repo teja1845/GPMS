@@ -715,7 +715,370 @@ def enrolltoschemes(request):
     return render(request, "enrolltoschemes.html")
 
 def addschemes(request):
+    
+    logging.debug("addscheme view called.")
+    
+    # Check if the user is logged in (flag must be 1)
+    if request.session.get("flag") != 1:
+        messages.error(request, "You must be logged in to add a citizen.")
+        return redirect("login")
+    
+    if request.method == "POST":
+        name = request.POST.get("scheme_name")
+        age_start = request.POST.get("eligible_age_start")
+        age_end = request.POST.get("eligible_age_end")
+        gender = request.POST.get("eligible_gender")
+        occupation = request.POST.get("eligible_occupation")
+        income = request.POST.get("eligible_income") 
+        scheme_amt = request.POST.get("scheme_amt")
+        land_area = float(request.POST.get("eligible_land_area")) if request.POST.get("eligible_land_area") else None
+
+        # Convert age range to a string in the format "start-end"
+        eligible_age_range = f"{age_start}-{age_end}"
+        
+        try:
+            logging.debug("Attempting to connect to the database...")
+            conn = get_db_connection()
+            cur = conn.cursor()
+            logging.debug("Database connection established.")
+            
+            query = """
+                INSERT INTO welfare_scheme (nm, eligible_age_range, eligible_gender, eligible_occupation, eligible_income, eligible_land_area, scheme_amt)
+                VALUES (%s, %s, %s, %s, %s, %s, %s);
+            """
+            
+            values = (name, eligible_age_range, gender, occupation, income, land_area, scheme_amt)
+            logging.debug(f"Executing SQL Query: {query} with values {values}")
+            
+            cur.execute(query, values)
+            conn.commit()
+            logging.debug("Transaction committed successfully.")
+            
+            cur.close()
+            conn.close()
+            logging.debug("Database connection closed.")
+            messages.success(request, "scheme added successfully.")
+            return redirect("panchayat_employees")  # Redirect to home or another page after success
+            
+        except psycopg2.Error as e:
+            conn.rollback()
+            logging.error(f"Database error: {e}")
+            messages.error(request, f"Database error: {e}")
+            
+        except ValueError as e:
+            logging.error(f"Value error: {e}")
+            messages.error(request, "Invalid data format.")
+            
+        finally:
+            if cur:
+                cur.close()
+            if conn:
+                conn.close()
+    
+    
+    logging.debug("addscheme view called.")
+    
+    # Check if the user is logged in (flag must be 1)
+    if request.session.get("flag") != 1:
+        messages.error(request, "You must be logged in to add a citizen.")
+        return redirect("login")
+    
+    if request.method == "POST":
+        name = request.POST.get("scheme_name")
+        age_start = request.POST.get("eligible_age_start")
+        age_end = request.POST.get("eligible_age_end")
+        gender = request.POST.get("eligible_gender")
+        occupation = request.POST.get("eligible_occupation")
+        income = request.POST.get("eligible_income") 
+        scheme_amt = request.POST.get("scheme_amt")
+        land_area = float(request.POST.get("eligible_land_area")) if request.POST.get("eligible_land_area") else None
+
+        # Convert age range to a string in the format "start-end"
+        eligible_age_range = f"{age_start}-{age_end}"
+        
+        try:
+            logging.debug("Attempting to connect to the database...")
+            conn = get_db_connection()
+            cur = conn.cursor()
+            logging.debug("Database connection established.")
+            
+            query = """
+                INSERT INTO welfare_scheme (nm, eligible_age_range, eligible_gender, eligible_occupation, eligible_income, eligible_land_area, scheme_amt)
+                VALUES (%s, %s, %s, %s, %s, %s, %s);
+            """
+            
+            values = (name, eligible_age_range, gender, occupation, income, land_area, scheme_amt)
+            logging.debug(f"Executing SQL Query: {query} with values {values}")
+            
+            cur.execute(query, values)
+            conn.commit()
+            logging.debug("Transaction committed successfully.")
+            
+            cur.close()
+            conn.close()
+            logging.debug("Database connection closed.")
+            messages.success(request, "scheme added successfully.")
+            return redirect("panchayat_employees")  # Redirect to home or another page after success
+            
+        except psycopg2.Error as e:
+            conn.rollback()
+            logging.error(f"Database error: {e}")
+            messages.error(request, f"Database error: {e}")
+            
+        except ValueError as e:
+            logging.error(f"Value error: {e}")
+            messages.error(request, "Invalid data format.")
+            
+        finally:
+            if cur:
+                cur.close()
+            if conn:
+                conn.close()
+    
     return render(request, "addschemes.html")
+
+
+def addassets(request):
+    
+    logging.debug("addassets view called.")
+    
+    # Check if the user is logged in (flag must be 1)
+    if request.session.get("flag") != 1:
+        messages.error(request, "You must be logged in to add a citizen.")
+        return redirect("login")
+    
+    if request.method == "POST":
+        name = request.POST.get("type_a")
+        location = request.POST.get("locn")
+        installation_date = request.POST.get("installation_date")
+        scrap_cost = request.POST.get("scrap_cost")
+        stat = "active"
+        
+        try:
+            logging.debug("Attempting to connect to the database...")
+            conn = get_db_connection()
+            cur = conn.cursor()
+            logging.debug("Database connection established.")
+            
+            query = """
+                INSERT INTO assets (type_a, locn, installation_date, stat, scrap_cost)
+                VALUES (%s, %s, %s, %s, %s);
+            """
+            
+            values = (name, location, installation_date, stat, scrap_cost)
+            logging.debug(f"Executing SQL Query: {query} with values {values}")
+            
+            cur.execute(query, values)
+            conn.commit()
+            logging.debug("Transaction committed successfully.")
+            
+            cur.close()
+            conn.close()
+            logging.debug("Database connection closed.")
+            messages.success(request, "asset added successfully.")
+            return redirect("panchayat_employees")  # Redirect to home or another page after success
+            
+        except psycopg2.Error as e:
+            conn.rollback()
+            logging.error(f"Database error: {e}")
+            messages.error(request, f"Database error: {e}")
+            
+        except ValueError as e:
+            logging.error(f"Value error: {e}")
+            messages.error(request, "Invalid data format.")
+            
+        finally:
+            if cur:
+                cur.close()
+            if conn:
+                conn.close()
+    
+    return render(request, "addassets.html")
+
+def addhousehold(request):
+    logging.debug("addhousehold view called.")
+    
+    # Check if the user is logged in (flag must be 1)
+    if request.session.get("flag") != 1:
+        messages.error(request, "You must be logged in to add a citizen.")
+        return redirect("login")
+    
+    if request.method == "POST":
+        addr = request.POST.get("addr")
+        citizen_id = request.POST.get("citizen_id")
+
+        try:
+            logging.debug("Attempting to connect to the database...")
+            conn = get_db_connection()
+            cur = conn.cursor()
+            logging.debug("Database connection established.")
+            
+            # Check if the citizen exists
+            cur.execute("SELECT COUNT(*) FROM citizens WHERE id = %s;", (citizen_id,))
+            if cur.fetchone()[0] == 0:
+                messages.error(request, "Citizen ID does not exist.")
+                return redirect("panchayat_employees")
+            
+            # Insert new household
+            addhouse_query = """
+                INSERT INTO households (addr)
+                VALUES (%s)
+                RETURNING id;
+            """
+            
+            add_house_values = (addr,)  # Ensure it's a tuple
+            logging.debug(f"Executing SQL Query: {addhouse_query} with values {add_house_values}")
+            
+            cur.execute(addhouse_query, add_house_values)
+            household_id = cur.fetchone()[0]
+
+            if not household_id:
+                messages.error(request, "Failed to retrieve household ID.")
+                return redirect("panchayat_employees")
+            
+            conn.commit()
+            logging.debug(f"Household added successfully with ID {household_id}.")
+
+            # Assign the household to the citizen
+            update_citizen_query = """
+                UPDATE citizens 
+                SET household_id = %s 
+                WHERE id = %s;
+            """
+            
+            update_citizen_values = (household_id, citizen_id)
+            logging.debug(f"Executing SQL Query: {update_citizen_query} with values {update_citizen_values}")
+            
+            cur.execute(update_citizen_query, update_citizen_values)
+            conn.commit()
+            
+            messages.success(request, "Household added successfully.")
+            return redirect("panchayat_employees")
+
+        except psycopg2.Error as e:
+            conn.rollback()
+            logging.error(f"Database error: {e}")
+            messages.error(request, "Database error. Please try again.")
+
+        except ValueError as e:
+            logging.error(f"Value error: {e}")
+            messages.error(request, "Invalid data format.")
+
+        except Exception as e:
+            logging.error(f"Unexpected error: {e}")
+            messages.error(request, "An unexpected error occurred. Please try again.")
+
+        finally:
+            if 'cur' in locals() and cur:
+                cur.close()
+            if 'conn' in locals() and conn:
+                conn.close()
+            logging.debug("Database connection closed.")
+            
+    return render(request, "addhousehold.html")
+
+def updateCitizen(request):
+    records = {}
+    if request.method == "POST":
+        # Get form data from POST request
+        ctzn_id=request.POST.get("id")
+        name = request.POST.get("name")
+        gender = request.POST.get("gender")
+        household_id = request.POST.get("household_id")
+        educational_qualification = request.POST.get("educational_qualification")
+        dob = request.POST.get("dob")  # Ensure this is in YYYY-MM-DD format
+        income = request.POST.get("income")
+        occupation = request.POST.get("occupation")
+
+        logging.debug(f"Received form data: {request.POST}")
+
+        # Validate input (ensure required fields are not empty)
+        if not all([name, gender, household_id, educational_qualification, dob, income, occupation]):
+            messages.error(request, "All fields are required.")
+            return redirect("updateCitizen")
+
+        try:
+            conn = get_db_connection()
+            cur = conn.cursor()
+            logging.debug("Database connection established for UPDATE.")
+
+            # Update query
+            update_query = """
+                UPDATE citizens 
+                SET nm = %s, gender = %s, household_id = %s, education_qualification = %s, 
+                    dob = %s, income = %s, occupation = %s
+                WHERE id = %s;
+            """
+            cur.execute(update_query, (name, gender, household_id, educational_qualification, dob, income, occupation, ctzn_id))
+            conn.commit()
+
+            logging.debug(f"Database updated successfully for ID: {ctzn_id}.")
+            messages.success(request, "Citizen profile updated successfully.")
+
+            # Close DB connection
+            cur.close()
+            conn.close()
+            logging.debug("Database connection closed after update.")
+
+            return redirect("panchayat_employees")  # Redirect after successful update
+
+        except psycopg2.Error as e:
+            logging.error(f"Database update error: {e}")
+            messages.error(request, f"Database error: {e}")
+
+    elif request.method == "GET":
+        # Get ID from URL or fall back to session ID
+        id=request.GET.get("ctzn_id")    
+        logging.debug(f"ID retrieved: {id} ")
+
+        if not id:
+            messages.error(request, "User ID not found in session or URL.")
+            logging.error("User ID not found in session or URL.")
+            return render(request, "updateCitizen.html", {"record": records})
+
+        try:
+            id = int(id)  # Ensure ID is an integer
+        except ValueError:
+            messages.error(request, "Invalid ID format.")
+            logging.error("Invalid ID format received.")
+            return render(request, "updateCitizen.html", {"record": records})
+
+            # If GET request, fetch the existing citizen data
+        try:
+            logging.debug("Connecting to the database for GET request...")
+            conn = get_db_connection()
+            cur = conn.cursor()
+
+            query = """
+                SELECT nm, gender, household_id, education_qualification, dob, income, occupation
+                FROM citizens
+                WHERE id = %s;
+            """
+            logging.debug(f"Executing query: {query} with id: {id}")
+            cur.execute(query, (id,))  
+            c_data = cur.fetchone()  # Fetch a single row
+            logging.debug(f"Query executed successfully. Retrieved data: {c_data}")
+
+            if c_data:
+                c_columns = ["name", "gender", "household_id", "educational_qualification", "dob", "income", "occupation"]
+                records = dict(zip(c_columns, c_data))
+
+                # Convert date format if needed
+                if records["dob"]:
+                    records["dob"] = records["dob"].strftime("%Y-%m-%d")  # Ensure correct format for <input type="date">
+
+                logging.debug(f"Final records sent to template: {records}")
+
+            cur.close()
+            conn.close()
+            logging.debug("Database connection closed.")
+
+        except psycopg2.Error as e:
+            logging.error(f"Database fetch error: {e}")
+            messages.error(request, f"Database error: {e}")
+        
+        return render(request, "updateCitizen.html", {"record": records})
+
 
 # View to fetch citizen's taxes
 def citizenTaxes(request):

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Record Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .form-container {
+            max-width: 400px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 2px 2px 12px #aaa;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="text"],
+        input[type="number"],
+        input[type="date"] {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        input[type="submit"],
+        .back-button {
+            padding: 10px 15px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            display: inline-block;
+        }
+        input[type="submit"]:hover,
+        .back-button:hover {
+            background-color: #218838;
+        }
+        .back-button {
+            background-color: #28a745; /* Blue color for back button */
+        }
+        .back-button:hover {
+            background-color: #218838; /* Darker blue on hover */
+        }
+        #bck{
+            background-color: red;
+        }
+        #bck:hover{
+            background-color: rgb(193, 4, 4);
+        }
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    <h2>Update Citizen Profile</h2>
+    
+    {% if record %}
+        {% with record as citizen %}
+        <form method="POST" action="{% url 'updateCitizen' %}">
+            {% csrf_token %}
+            
+            <input type="hidden" name="id" value="{{ record.id|default:request.GET.ctzn_id }}">
+            
+            <label>Name:</label>
+            <input type="text" name="name" value="{{ record.name|default:'' }}" required>
+        
+            <label>Gender:</label>
+            <input type="text" name="gender" value="{{ record.gender|default:'' }}" required>
+        
+            <label>Household ID:</label>
+            <input type="number" name="household_id" value="{{ record.household_id|default:'' }}" required>
+        
+            <label>Education:</label>
+            <input type="text" name="educational_qualification" value="{{ record.educational_qualification|default:'' }}" required>
+        
+            <label>Date of Birth:</label>
+            <input type="date" name="dob" value="{{ record.dob|default:'' }}" required>
+        
+            <label>Income:</label>
+            <input type="number" name="income" value="{{ record.income|default:'' }}" required>
+        
+            <label>Occupation:</label>
+            <input type="text" name="occupation" value="{{ record.occupation|default:'' }}" required>
+        
+            <button class="back-button" type="submit">Update Citizen</button>
+            <button class="back-button" id="bck" onclick="location.href='/panchayat_employees'">Back</button>
+        </form>        
+        {% endwith %}
+    {% else %}
+        <p>No citizen data found.</p>
+    {% endif %}
+    
+    
+</div>
+
+</body>
+</html>
