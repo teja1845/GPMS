@@ -51,9 +51,75 @@
     </style>
 </head>
 <body>
-
+    <h1>Welcome to the Admins Dashboard</h1>
     <div class="container">
-        <h1>Welcome to the Admins Dashboard</h1>
+    <div class="accordion">
+        <div class="accordion-header">Government Monitors</div>
+        <div class="accordion-content">
+            <input type="text" placeholder="Search Govt_monitors" />
+            <table>
+                <thead>
+                    <tr>
+                        <th>Sno</th>
+                        <th>Name</th>
+                        <th>Status</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in govt_monitors_record %}
+                    <tr>
+                        <td>{{ record.sno }}</td>
+                        <td>{{ record.name }}</td>
+                        <td>{{ record.stat }}</td>
+                        {% if record.stat == "active" %}
+                        <td>
+                            <button onclick="location.href='admin/deleteGM'" style="background-color: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px; margin-top: 10px;" >Make inactive</button>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                    <!-- Repeat for 4 more rows -->
+                </tbody>
+            </table>
+            <button class="button" onclick="location.href='Admin/addGovtMonitor_admin'">Add Govt Monitor</button>
+        </div>
+    </div>
+
+    <div class="accordion">
+        <div class="accordion-header">Panchayat Employees</div>
+        <div class="accordion-content">
+            <input type="text" placeholder="Search Panchayat Employees" />
+            <table>
+                <thead>
+                    <tr>
+                        <th>Sno</th>
+                        <th>Name</th>
+                        <th>job_role</th>
+                        <th>List of Owners</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in land_records %}
+                    <tr>
+                        <td>{{ record.sno }}</td>
+                        <td>{{ record.id }}</td>
+                        <td>{{ record.type }}</td>
+                        <td>{{ record.list_owners }}</td>
+                        <td><button style="background-color: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px; margin-top: 10px;">Update</button></td>
+                    </tr>
+                    {% endfor %}
+                    <!-- Repeat for 4 more rows -->
+                </tbody>
+            </table>
+            <button class="button" onclick="location.href='addland'">Add New Row</button>
+        </div>
+    </div>
+
+
+   
+        
         <div class="button-container">
             <a href="Admin/addGovtMonitor_admin" class="button">Add Govt Monitor</a>
             <a href="Admin/addemployee_admin" class="button">Add Employee</a>

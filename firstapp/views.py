@@ -1196,13 +1196,13 @@ def govt_monitors(request):
         # Fetch revenue report
         query = """
         WITH RECURSIVE years AS (
-        SELECT MIN(EXTRACT(YEAR FROM enrollment_date)) AS year FROM scheme_enrollment
+        SELECT MIN(EXTRACT(YEAR FROM enrollment_date))::INT AS year FROM scheme_enrollment
         UNION
         SELECT year + 1 FROM years WHERE year < EXTRACT(YEAR FROM CURRENT_DATE)
         ),
 
         wlf_amount AS (
-            SELECT EXTRACT(YEAR FROM se.enrollment_date) AS year,
+            SELECT EXTRACT(YEAR FROM se.enrollment_date)::INT AS year,
                 SUM(ws.scheme_amt) AS scheme_amount
             FROM scheme_enrollment AS se
             JOIN welfare_scheme AS ws ON se.scheme_id = ws.scheme_id
@@ -1210,28 +1210,28 @@ def govt_monitors(request):
         ),
 
         salaries AS (
-            SELECT y.year, SUM(pe.salary) AS salary
+            SELECT y.year, SUM(pe.salary)::INT AS salary
             FROM years y
             CROSS JOIN panchayat_employees pe
             GROUP BY y.year
         ),
 
         asset_exp AS (
-            SELECT EXTRACT(YEAR FROM ae.spent_date) AS year,
+            SELECT EXTRACT(YEAR FROM ae.spent_date)::INT AS year,
                 SUM(ae.amount_spent) AS asset_exp
             FROM assets_expenditure AS ae
             GROUP BY year
         ),
 
         tax AS (
-            SELECT EXTRACT(YEAR FROM th.trnsc_date) AS year,
+            SELECT EXTRACT(YEAR FROM th.trnsc_date)::INT AS year,
                 SUM(th.amount_paid) AS tax
             FROM transaction_history AS th
             GROUP BY year
         ),
 
         scrap AS (
-            SELECT EXTRACT(YEAR FROM a.demolition_date) AS year,
+            SELECT EXTRACT(YEAR FROM a.demolition_date)::INT AS year,
                 SUM(a.scrap_cost) AS scrap
             FROM assets AS a
             GROUP BY year
@@ -1260,10 +1260,10 @@ def govt_monitors(request):
         
         query="""
         WITH years AS (
-        SELECT DISTINCT EXTRACT(YEAR FROM se.enrollment_date) AS year
+        SELECT DISTINCT EXTRACT(YEAR FROM se.enrollment_date)::INT AS year
         FROM scheme_enrollment se
         UNION
-        SELECT DISTINCT EXTRACT(YEAR FROM CURRENT_DATE) -- To include the current year
+        SELECT DISTINCT EXTRACT(YEAR FROM CURRENT_DATE)::INT -- To include the current year
         ),
 
         schemes AS (
@@ -1278,7 +1278,7 @@ def govt_monitors(request):
         ),
 
         enrollments AS (
-        SELECT EXTRACT(YEAR FROM se.enrollment_date) AS year, 
+        SELECT EXTRACT(YEAR FROM se.enrollment_date)::INT AS year, 
         COUNT(se.citizen_id) AS No_Of_citizens, 
         se.scheme_id
         FROM scheme_enrollment se
@@ -1291,21 +1291,189 @@ def govt_monitors(request):
         ORDER BY ac.year, ac.nm;
 
         """
-
         cur.execute(query)
         welfare_data = cur.fetchall()
+        query="""
+        SELECT 
+        EXTRACT(YEAR FROM v.date_administered)::INT AS year,
+        v.vaccine_type,
+        COUNT(DISTINCT v.citizen_id) AS No_Of_Citizens
+        FROM 
+        vaccinations v
+        GROUP BY 
+        year, v.vaccine_type
+        ORDER BY 
+        year, v.vaccine_type;
 
+        """
+        cur.execute(query)
+        vaccine_data = cur.fetchall()
+        query="""
+        SELECT ar.yr AS year, 
+       ar.crop_type, 
+       SUM(la.area_acres) AS total_acres
+       FROM agricultural_records ar
+       JOIN land_acres la ON ar.land_id = la.ID
+       GROUP BY ar.yr, ar.crop_type
+       ORDER BY ar.yr;
+
+
+        """
+        cur.execute(query)
+        agri_data = cur.fetchall()
+        query = """
+        SELECT 
+        year_series AS year_end,
+        COUNT(c.ID) AS total_population,
+
+        COUNT(CASE WHEN c.gender = 'Male' THEN 1 END) AS male_count,
+        COUNT(CASE WHEN c.gender = 'Female' THEN 1 END) AS female_count,
+
+        COUNT(CASE WHEN year_series - EXTRACT(YEAR FROM c.DOB) < 18 THEN 1 END) AS child_count,
+        COUNT(CASE WHEN year_series - EXTRACT(YEAR FROM c.DOB) > 60 THEN 1 END) AS senior_citizen_count,
+
+        COUNT(CASE WHEN EXTRACT(YEAR FROM c.DOB) = year_series THEN 1 END) AS number_of_births,
+        COUNT(CASE WHEN EXTRACT(YEAR FROM c.date_of_death) = year_series THEN 1 END) AS number_of_deaths,
+
+        ROUND(
+            (COUNT(CASE 
+                WHEN c.education_qualification IS NOT NULL 
+                AND c.education_qualification <> '' 
+                AND LOWER(c.education_qualification) <> 'illiterate' 
+            THEN 1 END) * 100.0) / COUNT(c.ID), 2
+        ) AS literacy_rate,
+
+        ROUND(
+            (COUNT(CASE 
+                WHEN c.occupation IS NOT NULL 
+                AND c.occupation <> '' 
+                AND c.occupation NOT IN ('Unemployed', 'Housewife') 
+            THEN 1 END) * 100.0) / COUNT(c.ID), 2
+        ) AS employment_rate
+
+        FROM 
+            generate_series(2000, CAST(EXTRACT(YEAR FROM CURRENT_DATE) AS INTEGER), 1) AS year_series
+
+        LEFT JOIN 
+            citizens c ON (EXTRACT(YEAR FROM c.DOB) <= year_series 
+            AND (c.date_of_death IS NULL OR EXTRACT(YEAR FROM c.date_of_death) >= year_series))
+
+        GROUP BY 
+            year_series
+
+        ORDER BY 
+            year_series;
+        """
+        cur.execute(query)
+        census_data = cur.fetchall()
+        query="""
+        SELECT 
+        year_series AS year,
+
+        COALESCE(SUM(CASE 
+        WHEN la.type_l = 'Agriculture'
+        AND (year_series BETWEEN EXTRACT(YEAR FROM lo.from_date) 
+        AND COALESCE(EXTRACT(YEAR FROM lo.to_date), CAST(EXTRACT(YEAR FROM CURRENT_DATE) AS INTEGER)))
+        AND NOT (
+            year_series = CAST(EXTRACT(YEAR FROM CURRENT_DATE) AS INTEGER)
+            AND lo.to_date IS NOT NULL
+            AND EXTRACT(YEAR FROM lo.to_date) = CAST(EXTRACT(YEAR FROM CURRENT_DATE) AS INTEGER)
+        )
+        THEN la.area_acres 
+        ELSE 0 
+        END), 0) AS total_agricultural_land,
+
+        COALESCE(SUM(CASE 
+        WHEN la.type_l = 'Non-Agriculture'
+        AND (year_series BETWEEN EXTRACT(YEAR FROM lo.from_date) 
+        AND COALESCE(EXTRACT(YEAR FROM lo.to_date), CAST(EXTRACT(YEAR FROM CURRENT_DATE) AS INTEGER)))
+        AND NOT (
+            year_series = CAST(EXTRACT(YEAR FROM CURRENT_DATE) AS INTEGER)
+            AND lo.to_date IS NOT NULL
+            AND EXTRACT(YEAR FROM lo.to_date) = CAST(EXTRACT(YEAR FROM CURRENT_DATE) AS INTEGER)
+        )
+        THEN la.area_acres 
+        ELSE 0 
+        END), 0) AS total_non_agricultural_land,
+
+        COALESCE(SUM(CASE 
+        WHEN (year_series BETWEEN EXTRACT(YEAR FROM lo.from_date) 
+        AND COALESCE(EXTRACT(YEAR FROM lo.to_date), CAST(EXTRACT(YEAR FROM CURRENT_DATE) AS INTEGER)))
+        AND NOT (
+            year_series = CAST(EXTRACT(YEAR FROM CURRENT_DATE) AS INTEGER)
+            AND lo.to_date IS NOT NULL
+            AND EXTRACT(YEAR FROM lo.to_date) = CAST(EXTRACT(YEAR FROM CURRENT_DATE) AS INTEGER)
+        )
+        THEN la.area_acres 
+        ELSE 0 
+        END), 0) AS total_land
+
+        FROM 
+        generate_series(
+        (SELECT MIN(EXTRACT(YEAR FROM from_date))::INTEGER FROM land_ownership), 
+        CAST(EXTRACT(YEAR FROM CURRENT_DATE) AS INTEGER), 
+        1
+        ) AS year_series
+
+        LEFT JOIN 
+        land_ownership lo ON (
+            year_series BETWEEN EXTRACT(YEAR FROM lo.from_date) 
+            AND COALESCE(EXTRACT(YEAR FROM lo.to_date), CAST(EXTRACT(YEAR FROM CURRENT_DATE) AS INTEGER))
+        )
+
+        LEFT JOIN 
+            land_acres la ON lo.land_id = la.ID
+
+        GROUP BY 
+            year_series
+
+        ORDER BY 
+            year_series;
+
+        """
+
+        cur.execute(query)
+        land_data = cur.fetchall()
+        query="""
+        SELECT 
+        pt.yr AS year,
+        COALESCE(SUM(pt.total_amount), 0) AS total_tax,
+        COALESCE(SUM(pt.total_amount - pt.due), 0) AS total_paid,
+        COALESCE(SUM(pt.due), 0) AS total_due
+
+        FROM 
+        payment_taxes pt
+
+        GROUP BY 
+        pt.yr
+
+        ORDER BY 
+        pt.yr;
+
+        """
+        cur.execute(query)
+        tax_data = cur.fetchall()
         rr_column_names = ["year","salaries", "asset_exp", "tax","scrap","scheme","net_amount"]
         rr_records = [{"s_no": idx + 1, **dict(zip(rr_column_names, row))} for idx, row in enumerate(rev_rep_data)]
         welf_column_names = ["year","scheme_name", "no_of_citizens"]
         welf_records = [{"s_no": idx + 1, **dict(zip(welf_column_names, row))} for idx, row in enumerate(welfare_data)]
+        vacc_column_names = ["year","vaccine_type", "no_of_citizens"]
+        vacc_records = [{"s_no": idx + 1, **dict(zip(vacc_column_names, row))} for idx, row in enumerate(vaccine_data)]
+        agri_column_names = ["year","crop_type", "total_acres"]
+        agri_records = [{"s_no": idx + 1, **dict(zip(agri_column_names, row))} for idx, row in enumerate(agri_data)]
+        census_column_names = ["year_end","total_population", "male_count", "female_count", "child_count", "senior_citizen_count", "number_of_births","number_of_deaths", "literacy_rate","employment_rate"]
+        census_records = [{"s_no": idx + 1, **dict(zip(census_column_names, row))} for idx, row in enumerate(census_data)]
+        land_column_names = ["year","total_agricultural_land", "total_non_agricultural_land", "total_land"]
+        land_records = [{"s_no": idx + 1, **dict(zip(land_column_names, row))} for idx, row in enumerate(land_data)]
+        tax_column_names = ["year","total_tax", "total_paid", "total_due"]
+        tax_records = [{"s_no": idx + 1, **dict(zip(tax_column_names, row))} for idx, row in enumerate(tax_data)]
     except psycopg2.Error as e:
         error_message = f"Database error: {e}"
         logging.error(error_message)  # Log the error
         messages.error(request, error_message)
         records=[]
 
-    return render(request,"govt_monitors.html",{"records": rr_records,"welf_records":welf_records})
+    return render(request,"govt_monitors.html",{"records": rr_records,"welf_records":welf_records,"vacc_records":vacc_records,"agri_records":agri_records,"census_records":census_records,"land_records":land_records,"tax_records":tax_records})
 
 def Admin(request):
     # logging.debug("admin is requested")

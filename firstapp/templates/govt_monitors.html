@@ -94,11 +94,26 @@
     </div>
 
     <div class="accordion">
-        <div class="accordion-header">Lands</div>
+        <div class="accordion-header">Land Report</div>
         <div class="accordion-content">
            
             <table>
-               
+                <tr>
+                    <th>Year</th>
+                    <th>Agricultural Land</th>
+                    <th>Non Agricultural Land</th>
+                    <th>Total Land</th>
+                    
+                </tr>
+                {% for record in land_records %}
+                <tr>
+                    <td>{{ record.year}}</td>
+                    <td>{{ record.total_agricultural_land }}</td>
+                    <td>{{ record.total_non_agricultural_land}}</td>
+                    <td>{{ record.total_land}}</td>
+                    
+                </tr>
+                {% endfor %}
             </table>
            
         </div>
@@ -129,89 +144,119 @@
     </div>
 
     <div class="accordion">
-        <div class="accordion-header">Tax Dues</div>
+        <div class="accordion-header">Vaccinations</div>
         <div class="accordion-content">
             <table>
-                
+                <tr>
+                    <th>Year</th>
+                    <th>Vaccination Type</th>
+                    <th>Number of citizens</th>
+                    
+                </tr>
+                {% for record in vacc_records %}
+                <tr>
+                    <td>{{ record.year}}</td>
+                    <td>{{ record.vaccine_type }}</td>
+                    <td>{{ record.no_of_citizens}}</td>
+                   
+                </tr>
+                {% endfor %}
             </table>
            
         </div>
     </div>
 
     <div class="accordion">
-        <div class="accordion-header">Scheme Enrollment</div>
+        <div class="accordion-header">Agriculture Records</div>
         <div class="accordion-content">
             
             <table>
-             
+                <tr>
+                    <th>Year</th>
+                    <th>Crop Type</th>
+                    <th>Total Acres</th>
+                    
+                </tr>
+                {% for record in agri_records %}
+                <tr>
+                    <td>{{ record.year}}</td>
+                    <td>{{ record.crop_type }}</td>
+                    <td>{{ record.total_acres}}</td>
+                   
+                </tr>
+                {% endfor %}
             </table>
            
         </div>
     </div>
 
     <div class="accordion">
-        <div class="accordion-header">Welfare Schemes</div>
+        <div class="accordion-header">Census Report</div>
         <div class="accordion-content">
             <table>
-                <thead>
+                
                     <tr>
-                        <th>Scheme ID</th>
-                        <th>Actions</th>
+                        <th>Year</th>
+                        <th>Total Population</th>
+                        <th>Male Population</th>
+                        <th>Female Population</th>
+                        <th>Number of children</th>
+                        <th>Number of senior citizens</th>
+                        <th>Number of births</th>
+                        <th>Number of deaths</th>
+                        <th>Literacy rate</th>
+                        <th>Employment rate</th>
                     </tr>
-                </thead>
-                <tbody>
-                    {% for record in citizens_records %}
+                
+                
+                    {% for record in census_records %}
                     <tr>
-                        <td>001</td>
-                        <td>
-                            <button>View</button>
-                        </td>
+                        <td>{{ record.year_end}}</td>
+                        <td>{{ record.total_population }}</td>
+                        <td>{{ record.male_count}}</td>
+                        <td>{{ record.female_count}}</td>
+                        <td>{{ record.child_count}}</td>
+                        <td>{{ record.senior_citizen_count}}</td>
+                        <td>{{ record.number_of_births}}</td>
+                        <td>{{ record.number_of_deaths}}</td>
+                        <td>{{ record.literacy_rate}}</td>
+                        <td>{{ record.employment_rate}}</td>
                     </tr>
                     {% endfor %}
                     <!-- Repeat for 4 more rows -->
-                </tbody>
+                
             </table>
-            <button class="button">Add</button>
-            <button class="button">Delete</button>
+            
         </div>
     </div>
 
     <div class="accordion">
-        <div class="accordion-header">Assets</div>
+        <div class="accordion-header">Tax Report</div>
         <div class="accordion-content">
             <table>
-                <thead>
-                    <tr>
-                        <th>Asset ID</th>
-                        <th>Asset Name</th>
-                        <th>Value</th>
-                        <th>Owner</th>
-                        <th>Location</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for record in citizens_records %}
-                    <tr>
-                        <td>001</td>
-                        <td>Tractor</td>
-                        <td>$10,000</td>
-                        <td>John Doe</td>
-                        <td>Farm 1</td>
-                        <td>
-                            <button>Edit</button>
-                            <button>Delete</button>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                    <!-- Repeat for 4 more rows -->
-                </tbody>
+                <tr>
+                    <th>Year</th>
+                    <th>Total Amount</th>
+                    <th>Paid Amount</th>
+                    <th>Due Amount</th>
+                    
+                </tr>
+                {% for record in tax_records %}
+                <tr>
+                    <td>{{ record.year}}</td>
+                    <td>{{ record.total_tax }}</td>
+                    <td>{{ record.total_paid}}</td>
+                    <td>{{ record.total_due}}</td>
+                </tr>
+                {% endfor %}
             </table>
-            <button class="button">Add Assets</button>
+            
         </div>
     </div>
 
     <button class="button" style="display: block; margin: 20px auto;" onclick="location.href='villagedashboard'">Village Dashboard</button>
+    <button class="button" style="display: block; margin: 20px auto;" onclick="location.href='logout'">Logoout</button>
+
 
     <script>
         // JavaScript for accordion functionality
