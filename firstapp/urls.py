@@ -26,6 +26,7 @@ urlpatterns = [
      path('addschemes',views.addschemes,name="addschemes"),
      path('Admin', views.Admin, name = 'Admin'),
      path('Admin/addGovtMonitor_admin', views.addGovtMonitor_admin, name = 'addGovtMonitor_admin'),
-     path('Admin/addemployee_admin', views.addemployee_admin, name = 'addemployee_admin'),
-     
+     path('Admin/addemployee_admin', views.addemployee_admin, name = 'addemployee_admin'),  
+     path('addassets',views.addassets,name="addassets"),
+     path('addhousehold',views.addhousehold,name="addhousehold"),
 ]
