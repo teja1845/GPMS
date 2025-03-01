@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crop History</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e3f2fd; /* Light Blue */
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #1976d2; /* Blue */
+            text-align: center;
+        }
+        .back-button {
+            display: inline-block;
+            padding: 10px 15px;
+            background-color: #1976d2; /* Blue */
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-bottom: 20px; /* Space below the button */
+        }
+        .back-button:hover {
+            background-color: #1565c0; /* Darker Blue */
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #1976d2; /* Blue */
+            color: white;
+            font-weight: bold;
+        }
+        tr:hover {
+            background-color: #bbdefb; /* Light Blue */
+        }
+        p {
+            text-align: center;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <a href="{% url 'land_records' %}" class="back-button">Back</a>
+    <h1>Crop History</h1>
+
+    {% if records %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Year</th>
+                    <th>Crop Type</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for crop in records %}
+                    <tr>
+                        <td>{{ crop.yr }}</td>
+                        <td>{{ crop.crop_type }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No crop history found.</p>
+    {% endif %}
+</body>
+</html>

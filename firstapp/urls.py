@@ -27,5 +27,9 @@ urlpatterns = [
      path('Admin', views.Admin, name = 'Admin'),
      path('Admin/addGovtMonitor_admin', views.addGovtMonitor_admin, name = 'addGovtMonitor_admin'),
      path('Admin/addemployee_admin', views.addemployee_admin, name = 'addemployee_admin'),
+     path('Admin/deleteGM/',views.inactiveGM,name = 'inactiveGM'),
+     path('Admin/deletePE/',views.inactivePE,name = 'inactivePE'),
+     path('citizens/updateLandRecord/', views.updateLandRecord, name='updateLandRecord'),
+     path('citizens/crop_history/', views.crop_history, name='crop_history'),
      
 ]

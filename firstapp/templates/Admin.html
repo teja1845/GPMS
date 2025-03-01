@@ -3,56 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admins Dashboard</title>
+    <title>Government Monitor Main Page</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background: linear-gradient(to right, #e3f2fd, #90caf9);
+            background-color: #f4f4f4;
             margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-        .container {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            max-width: 400px;
-            width: 100%;
+            padding: 20px;
         }
         h1 {
-            color: #333;
-            font-size: 24px;
-            margin-bottom: 20px;
+            text-align: center;
         }
-        .button-container {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
+        .accordion {
+            background-color: #eee;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .accordion-header {
+            padding: 10px;
+            cursor: pointer;
+            text-align: left;
+            outline: none;
+            font-size: 18px;
+            transition: background-color 0.3s;
+        }
+        .accordion-header:hover {
+            background-color: #ddd;
+        }
+        .accordion-content {
+            display: none;
+            padding: 10px;
+            border-top: 1px solid #ccc;
+            background-color: white;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
         }
         .button {
-            background: #007bff;
+            background-color: #4CAF50;
             color: white;
-            padding: 12px;
-            text-align: center;
-            text-decoration: none;
-            font-size: 16px;
+            padding: 10px;
+            border: none;
+            cursor: pointer;
             border-radius: 5px;
-            transition: 0.3s;
-            box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.1);
+            margin-top: 10px;
         }
         .button:hover {
-            background: #0056b3;
+            background-color: #45a049;
         }
     </style>
 </head>
+
 <body>
-    <h1>Welcome to the Admins Dashboard</h1>
-    <div class="container">
+    <h1> Admin Dashboard</h1>
     <div class="accordion">
         <div class="accordion-header">Government Monitors</div>
         <div class="accordion-content">
@@ -67,16 +78,18 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for record in govt_monitors_record %}
+                    {% for record in GM_records %}
                     <tr>
-                        <td>{{ record.sno }}</td>
+                        <td>{{ record.s_no }}</td>
                         <td>{{ record.name }}</td>
-                        <td>{{ record.stat }}</td>
-                        {% if record.stat == "active" %}
+                        <td>{{ record.status }}</td>
                         <td>
-                            <button onclick="location.href='admin/deleteGM'" style="background-color: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px; margin-top: 10px;" >Make inactive</button>
-                        </td>
+                        {% if record.status == "active" %}
+                        
+                            <button onclick="location.href='Admin/deleteGM/?GM_id={{ record.id }}'" style="background-color: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px; margin-top: 10px;" >Make inactive</button>
+                        
                         {% endif %}
+                        </td>
                     </tr>
                     {% endfor %}
                     <!-- Repeat for 4 more rows -->
@@ -96,36 +109,44 @@
                         <th>Sno</th>
                         <th>Name</th>
                         <th>job_role</th>
-                        <th>List of Owners</th>
-                        <th>Actions</th>
+                        <th>Status</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for record in land_records %}
+                    {% for record in PE_records %}
                     <tr>
-                        <td>{{ record.sno }}</td>
-                        <td>{{ record.id }}</td>
-                        <td>{{ record.type }}</td>
-                        <td>{{ record.list_owners }}</td>
-                        <td><button style="background-color: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px; margin-top: 10px;">Update</button></td>
+                        <td>{{ record.s_no }}</td>
+                        <td>{{ record.name }}</td>
+                        <td>{{ record.job_role }}</td>
+                        <td>{{ record.status }}</td>
+                        <td>
+                        {% if record.status == "active" %}
+                        
+                            <button onclick="location.href='Admin/deletePE/?PE_id={{ record.id }}'" style="background-color: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px; margin-top: 10px;" >Make inactive</button>
+                        {% endif %}
+                        </td>
                     </tr>
                     {% endfor %}
                     <!-- Repeat for 4 more rows -->
                 </tbody>
             </table>
-            <button class="button" onclick="location.href='addland'">Add New Row</button>
+            <button class="button" onclick="location.href='Admin/addemployee_admin'">Add Panchayat Employee</button>
         </div>
     </div>
 
+    <button class="button" style="display: block; margin: 20px auto;" onclick="location.href='logout'">Logoout</button>
 
-   
-        
-        <div class="button-container">
-            <a href="Admin/addGovtMonitor_admin" class="button">Add Govt Monitor</a>
-            <a href="Admin/addemployee_admin" class="button">Add Employee</a>
-            <a href="logout" class="button">Logout</a>
-        </div>
-    </div>
+    <script>
+        // JavaScript for accordion functionality
+        const accordions = document.querySelectorAll('.accordion-header');
+        accordions.forEach(accordion => {
+            accordion.addEventListener('click', function() {
+                const content = this.nextElementSibling;
+                content.style.display = content.style.display === 'block' ? 'none' : 'block';
+            });
+        });
+    </script>
 
 </body>
 </html>
