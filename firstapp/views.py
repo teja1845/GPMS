@@ -917,6 +917,108 @@ def addhousehold(request):
             
     return render(request, "addhousehold.html")
 
+def updateCitizen(request):
+    records = {}
+    if request.method == "POST":
+        # Get form data from POST request
+        ctzn_id=request.POST.get("id")
+        name = request.POST.get("name")
+        gender = request.POST.get("gender")
+        household_id = request.POST.get("household_id")
+        educational_qualification = request.POST.get("educational_qualification")
+        dob = request.POST.get("dob")  # Ensure this is in YYYY-MM-DD format
+        income = request.POST.get("income")
+        occupation = request.POST.get("occupation")
+
+        logging.debug(f"Received form data: {request.POST}")
+
+        # Validate input (ensure required fields are not empty)
+        if not all([name, gender, household_id, educational_qualification, dob, income, occupation]):
+            messages.error(request, "All fields are required.")
+            return redirect("updateCitizen")
+
+        try:
+            conn = get_db_connection()
+            cur = conn.cursor()
+            logging.debug("Database connection established for UPDATE.")
+
+            # Update query
+            update_query = """
+                UPDATE citizens 
+                SET nm = %s, gender = %s, household_id = %s, education_qualification = %s, 
+                    dob = %s, income = %s, occupation = %s
+                WHERE id = %s;
+            """
+            cur.execute(update_query, (name, gender, household_id, educational_qualification, dob, income, occupation, ctzn_id))
+            conn.commit()
+
+            logging.debug(f"Database updated successfully for ID: {ctzn_id}.")
+            messages.success(request, "Citizen profile updated successfully.")
+
+            # Close DB connection
+            cur.close()
+            conn.close()
+            logging.debug("Database connection closed after update.")
+
+            return redirect("panchayat_employees")  # Redirect after successful update
+
+        except psycopg2.Error as e:
+            logging.error(f"Database update error: {e}")
+            messages.error(request, f"Database error: {e}")
+
+    elif request.method == "GET":
+        # Get ID from URL or fall back to session ID
+        id=request.GET.get("ctzn_id")    
+        logging.debug(f"ID retrieved: {id} ")
+
+        if not id:
+            messages.error(request, "User ID not found in session or URL.")
+            logging.error("User ID not found in session or URL.")
+            return render(request, "updateCitizen.html", {"record": records})
+
+        try:
+            id = int(id)  # Ensure ID is an integer
+        except ValueError:
+            messages.error(request, "Invalid ID format.")
+            logging.error("Invalid ID format received.")
+            return render(request, "updateCitizen.html", {"record": records})
+
+            # If GET request, fetch the existing citizen data
+        try:
+            logging.debug("Connecting to the database for GET request...")
+            conn = get_db_connection()
+            cur = conn.cursor()
+
+            query = """
+                SELECT nm, gender, household_id, education_qualification, dob, income, occupation
+                FROM citizens
+                WHERE id = %s;
+            """
+            logging.debug(f"Executing query: {query} with id: {id}")
+            cur.execute(query, (id,))  
+            c_data = cur.fetchone()  # Fetch a single row
+            logging.debug(f"Query executed successfully. Retrieved data: {c_data}")
+
+            if c_data:
+                c_columns = ["name", "gender", "household_id", "educational_qualification", "dob", "income", "occupation"]
+                records = dict(zip(c_columns, c_data))
+
+                # Convert date format if needed
+                if records["dob"]:
+                    records["dob"] = records["dob"].strftime("%Y-%m-%d")  # Ensure correct format for <input type="date">
+
+                logging.debug(f"Final records sent to template: {records}")
+
+            cur.close()
+            conn.close()
+            logging.debug("Database connection closed.")
+
+        except psycopg2.Error as e:
+            logging.error(f"Database fetch error: {e}")
+            messages.error(request, f"Database error: {e}")
+        
+        return render(request, "updateCitizen.html", {"record": records})
+
 
 
 # View to fetch citizen's taxes

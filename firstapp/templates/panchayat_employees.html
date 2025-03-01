@@ -89,14 +89,14 @@
                         <td>{{ record.gender }}</td>
                         <td>{{ record.dob }}</td>
                         <td>
-                            <button style="background-color: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px; margin-top: 10px;" >Update</button>
+                            <button onclick="location.href='updateCitizen/?ctzn_id={{ record.id }}'"s style="background-color: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px; margin-top: 10px;" >Update</button>
                         </td>
                     </tr>
                     {% endfor %}
                     <!-- Repeat for 4 more rows -->
                 </tbody>
             </table>
-            <button class="button" onclick="location.href='addcitizen'">Add New Row</button>
+            <button class="button" onclick="location.href='addcitizen'">Add New Citizen</button>
         </div>
     </div>
 
@@ -128,7 +128,7 @@
                     <!-- Repeat for 4 more rows -->
                 </tbody>
             </table>
-            <button class="button" onclick="location.href='addland'">Add New Row</button>
+            <button class="button" onclick="location.href='addland'">Add New Lands</button>
         </div>
     </div>
 
@@ -300,7 +300,7 @@
                     <!-- Repeat for 4 more rows -->
                 </tbody>
             </table>
-            <button class="button" onclick="location.href='addassets'">Add Scheme</button>
+            <button class="button" onclick="location.href='addassets'">Add Asset</button>
         </div>
     </div>
 
@@ -330,7 +330,7 @@
                     <!-- Repeat for 4 more rows -->
                 </tbody>
             </table>
-            <button class="button" onclick="location.href='addhousehold'">Add Scheme</button>
+            <button class="button" onclick="location.href='addhousehold'">Add Household</button>
         </div>
     </div>
 

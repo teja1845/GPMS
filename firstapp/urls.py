@@ -29,4 +29,5 @@ urlpatterns = [
      path('Admin/addemployee_admin', views.addemployee_admin, name = 'addemployee_admin'),  
      path('addassets',views.addassets,name="addassets"),
      path('addhousehold',views.addhousehold,name="addhousehold"),
+     path('updateCitizen/',views.updateCitizen,name="updateCitizen"),
 ]
