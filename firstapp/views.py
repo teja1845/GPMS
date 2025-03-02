@@ -530,6 +530,13 @@ def panemp(request):
         cur.execute(house_query, house_query_params)
         house_data = cur.fetchall()
         
+        query = """
+        SELECT c.complaint_id, citizen_id, c.enrolled_date, c.description
+        FROM complaints c;
+        """
+        cur.execute(query)
+        complaints_data = cur.fetchall()
+        
         cur.close()
         conn.close()
         # logging.debug("Database connection closed.")
@@ -557,8 +564,11 @@ def panemp(request):
         ast_column_names=["sno","ast_id","ast_name","loc","exp","stat"]
         ast_records = [{"sno": idx + 1, **dict(zip(ast_column_names[1:], row))} for idx, row in enumerate(ast_data)]
         
-        house_column_names=["sno","house_id","addr","income","members"]
+        house_column_names=["sno","house_id","addr","members"]
         house_records = [{"sno": idx + 1, **dict(zip(house_column_names[1:], row))} for idx, row in enumerate(house_data)]
+        
+        complaints_column_names=["sno","complaint_id","citizen_id","date","description"]
+        complaints_records = [{"sno": idx + 1, **dict(zip(complaints_column_names[1:], row))} for idx, row in enumerate(complaints_data)]
         # logging.debug(f"Processed records: {records}")  # Debugging Output
 
         search_params = {
@@ -575,7 +585,7 @@ def panemp(request):
         messages.error(request, error_message)
         records=[]
 
-    return render(request,"panchayat_employees.html",{"citizens_record":citizens_records,"land_records":land_records,"search_params": search_params,"cer_records":cer_records,"tax_records":txn_records,"wel_records":wel_records,"sch_records":sch_records,"assets_records":ast_records,"house_records":house_records})
+    return render(request,"panchayat_employees.html",{"citizens_record":citizens_records,"land_records":land_records,"search_params": search_params,"cer_records":cer_records,"tax_records":txn_records,"wel_records":wel_records,"sch_records":sch_records,"assets_records":ast_records,"house_records":house_records,"complaints_records":complaints_records})
 
 def addcitizen(request):
     logging.debug("addcitizen view called.")
@@ -1621,6 +1631,71 @@ def update_all_taxes(request):
     except psycopg2.Error as e:
         logging.error(f"Database update error: {e}")
         messages.error(request, f"Error updating tax records: {e}")
+        return redirect("panchayat_employees")
+
+def enroll_eligible_members(request):
+    try:
+        logging.debug("Enrolling eligible citizens in welfare schemes.")
+
+        conn = get_db_connection()
+        cur = conn.cursor()
+
+        # Fetch all welfare schemes and their eligibility criteria
+        cur.execute("SELECT scheme_id, eligible_age_range, eligible_gender, eligible_occupation, eligible_income, eligible_land_area FROM welfare_scheme")
+        schemes = cur.fetchall()
+
+        # Fetch all citizens and their details
+        cur.execute("""
+            SELECT c.id, c.gender, c.occupation, c.income, c.dob, COALESCE(lo.total_land_area, 0) AS land_area
+            FROM citizens c
+            LEFT JOIN (
+                SELECT lo.citizen_id, COALESCE(SUM(la.area_acres), 0) AS total_land_area
+                FROM land_ownership lo
+                JOIN land_acres la ON lo.land_id = la.id
+                WHERE lo.to_date IS NULL OR lo.to_date > CURRENT_DATE
+                GROUP BY lo.citizen_id
+            ) lo ON c.id = lo.citizen_id
+        """)
+        citizens = cur.fetchall()
+
+        year_today = date.today().year
+
+        for citizen in citizens:
+            citizen_id, gender, occupation, income, dob, land_area = citizen
+            age = year_today - dob.year
+
+            for scheme in schemes:
+                scheme_id, age_range, eligible_gender, eligible_occupation, eligible_income, eligible_land = scheme
+
+                # Parse eligible age range
+                min_age, max_age = map(int, age_range.split('-'))
+
+                # Check eligibility
+                if (
+                    min_age <= age <= max_age and
+                    (eligible_gender == 'Any' or eligible_gender == gender) and
+                    (eligible_occupation == 'Any' or eligible_occupation == occupation) and
+                    (income <= eligible_income) and
+                    (land_area <= eligible_land)
+                ):
+                    # Check if already enrolled
+                    cur.execute("SELECT 1 FROM scheme_enrollment WHERE citizen_id = %s AND scheme_id = %s", (citizen_id, scheme_id))
+                    if not cur.fetchone():
+                        # Enroll the citizen
+                        cur.execute("INSERT INTO scheme_enrollment (citizen_id, scheme_id, enrollment_date) VALUES (%s, %s, CURRENT_DATE)", (citizen_id, scheme_id))
+
+        conn.commit()
+        logging.debug("All eligible citizens enrolled successfully.")
+
+        cur.close()
+        conn.close()
+
+        messages.success(request, "All eligible citizens enrolled successfully.")
+        return redirect("panchayat_employees")
+
+    except psycopg2.Error as e:
+        logging.error(f"Database update error: {e}")
+        messages.error(request, f"Error enrolling citizens: {e}")
         return redirect("panchayat_employees")
 
 

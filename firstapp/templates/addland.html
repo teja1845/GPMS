@@ -51,15 +51,22 @@
             background-color: #45a049;
         }
         .back-btn{
+            color: white;
+            padding: 10px;
             width: 50%;
-            background-color: red;
-            margin-left: 10px;
+            border: none;
+            background-color: rgb(215, 3, 3);
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 10px;
         }
         .back-btn:hover{
             background-color: rgb(215, 3, 3);
         }
         .btncls{
             display: flex;
+            width: 50%;
+            justify-content: center;
         }
     </style>
 </head>
@@ -91,9 +98,9 @@
             </div>
             <div class="btncls">
                 <button type="submit">Submit</button>
-                <button class="back-btn" onclick="location.href='panchayat_employees'">Back</button>
             </div>
         </form>
+        <button class="back-btn" onclick="location.href='panchayat_employees'">Back</button>
     </div>
 
 </body>

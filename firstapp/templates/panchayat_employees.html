@@ -383,7 +383,13 @@
                     <!-- Repeat for 4 more rows -->
                 </tbody>
             </table>
-            <button class="button" onclick="location.href='enrolltoschemes'">Enroll members to scheme</button>
+            <button class="button" onclick="location.href='enrolltoschemes'">Enroll a person to scheme</button>
+            <div class="button up">
+                <a href="{% url 'enroll_eligible_members' %}" style=" color: white; border: none; cursor: pointer; border-radius: 5px; text-decoration: none;margin:20px;">
+                    Enroll Eligible Citizens
+                 </a>
+            </div>
+            
         </div>
     </div>
 
@@ -513,8 +519,7 @@
                             <th>Sno</th>
                             <th>Household ID</th>
                             <th>Address</th>
-                            <th>Income</th>
-                            <th>Members</th>
+                                <th>Members</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -524,8 +529,7 @@
                             <td>{{ record.sno }}</td>
                             <td>{{ record.house_id }}</td>
                             <td>{{ record.addr }}</td>
-                            <td>{{ record.income }}</td>
-                            <td>{{ record.members }}</td>
+                                <td>{{ record.members }}</td>
                             <td>
                                 <button onclick="location.href='updateHousehold/?house_id={{ record.house_id }}'" style="background-color: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px;">Update</button>
                                 <button onclick="location.href='previousHouseholds/?house_id={{ record.house_id }}'" style="background-color: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px;">Previous Records</button>
@@ -540,6 +544,36 @@
     
     
     
+    <div class="accordion">
+        <div class="accordion-header">View Complaints</div>
+        <div class="accordion-content">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Sno</th>
+                        <th>Complaint ID</th>
+                        <th>Citizen ID</th>
+                        <th>Date</th>
+                        <th>description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in complaints_records %}
+                    <tr>
+                        <td>{{ record.sno }}</td>
+                        <td>{{ record.complaint_id }}</td>
+                        <td>{{ record.citizen_id }}</td>
+                        <td>{{ record.date }}</td>
+                        <td>{{ record.description }}</td>
+                    </tr>
+                    {% endfor %}
+                    <!-- Repeat for 4 more rows -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
 
     <button class="button" style="display: block; margin: 20px auto;" onclick="location.href='villagedashboard'">Village Dashboard</button>
     <button class="button" style="display: block; margin: 20px auto;" onclick="location.href='logout'">Logout</button>

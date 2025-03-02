@@ -46,6 +46,23 @@
         .edit-button:hover {
             background-color: #0056b3;
         }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: rgb(198, 3, 3);
+        }
+        .back-btn {
+            width: 25%;
+            background-color: red;
+            margin-left: 10px;
+        }
     </style>
 </head>
 <body>
@@ -110,6 +127,7 @@
     <a href="{% url 'editCitizenProfile' %}" class="edit-button">Edit Profile</a>
 </div>
 
+<button class="back-btn" onclick="location.href='/citizens'">Back</button>
 {% else %}
 <p>No records found.</p>
 {% endif %}
