@@ -350,6 +350,7 @@
                         <th>Tax Type</th>
                         <th>Total Amount</th>
                         <th>Due</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -361,6 +362,13 @@
                         <td>{{ record.tax_type }}</td>
                         <td>{{ record.total_amount }}</td>
                         <td>{{ record.due }}</td>
+                        <td>
+                            {% if record.due == 0 %}
+                                <button style="background-color: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px; margin-top: 10px;">Download</button>
+                            {% else %}
+                                <button onclick = "location.href ='citizens/paymentPage/?tax_id={{ record.tax_id }}'";  style="background-color: red; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px; margin-top: 10px;">Pay</button>
+                            {% endif %}
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -542,8 +550,7 @@
                             <th>Sno</th>
                             <th>Household ID</th>
                             <th>Address</th>
-                                <th>Members</th>
-                            <th>Actions</th>
+                            <th>Members</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -552,11 +559,7 @@
                             <td>{{ record.sno }}</td>
                             <td>{{ record.house_id }}</td>
                             <td>{{ record.addr }}</td>
-                                <td>{{ record.members }}</td>
-                            <td>
-                                <button onclick="location.href='updateHousehold/?house_id={{ record.house_id }}'" style="background-color: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px;">Update</button>
-                                <button onclick="location.href='previousHouseholds/?house_id={{ record.house_id }}'" style="background-color: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px;">Previous Records</button>
-                            </td>
+                            <td>{{ record.members }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
