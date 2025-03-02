@@ -297,7 +297,13 @@
                     <!-- Repeat for 4 more rows -->
                 </tbody>
             </table>
-            <button class="button" onclick="location.href='enrolltoschemes'">Enroll members to scheme</button>
+            <button class="button" onclick="location.href='enrolltoschemes'">Enroll a person to scheme</button>
+            <div class="button up">
+                <a href="{% url 'enroll_eligible_members' %}" style=" color: white; border: none; cursor: pointer; border-radius: 5px; text-decoration: none;margin:20px;">
+                    Enroll Eligible Citizens
+                 </a>
+            </div>
+            
         </div>
     </div>
 
@@ -399,7 +405,6 @@
                         <th>Sno</th>
                         <th>Household ID</th>
                         <th>Address</th>
-                        <th>Income</th>
                         <th>Members</th>
                     </tr>
                 </thead>
@@ -409,7 +414,6 @@
                         <td>{{ record.sno }}</td>
                         <td>{{ record.house_id }}</td>
                         <td>{{ record.addr }}</td>
-                        <td>{{ record.income }}</td>
                         <td>{{ record.members }}</td>
                     </tr>
                     {% endfor %}
