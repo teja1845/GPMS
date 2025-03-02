@@ -133,17 +133,43 @@
         <div class="accordion-header">Citizens</div>
         <div class="accordion-content">
             <div class="container">
-                <label for="ctzn-attribute-select">Choose an attribute:</label>
-                 <select id="ctzn-attribute-select" onchange="citizenShowInputFields()">
-                     <option value="">--Select an attribute--</option>
-                     <option value="dob">Date of Birth</option>
-                     <option value="gender">Gender</option>
-                     <option value="category">Category</option>
-                     <option value="income">Income</option>
-                     <option value="occupation">Occupation</option>
-                 </select>
-                 <div id="ctzn-input-fields" class="input-fields"></div>
-                 <button class="submit-button" id="ctzn-submit-button"  onclick="submitForm()">Submit</button>
+                <form id="citizen-search-form" method="POST" action="{% url 'panchayat_employees' %}">
+                    {% csrf_token %}
+                    <label for="ctzn-attribute-select">Choose an attribute:</label>
+                    <select id="ctzn-attribute-select" name="search_attribute" onchange="citizenShowInputFields()">
+                        <option value="">--Select an attribute--</option>
+                        <option value="dob" {% if search_params.search_citizen_dob_start or search_params.search_citizen_dob_end %}selected{% endif %}>Date of Birth</option>
+                        <option value="gender" {% if search_params.search_citizen_gender %}selected{% endif %}>Gender</option>
+                        <option value="category" {% if search_params.search_citizen_category %}selected{% endif %}>Category</option>
+                        <option value="income" {% if search_params.search_citizen_income_min or search_params.search_citizen_income_max %}selected{% endif %}>Income</option>
+                        <option value="occupation" {% if search_params.search_citizen_occupation %}selected{% endif %}>Occupation</option>
+                    </select>
+    
+                    <div id="ctzn-input-fields" class="input-fields">
+                        {% if search_params.search_citizen_dob_start or search_params.search_citizen_dob_end %}
+                            <label for="dob-start-date">Start Date:</label>
+                            <input type="date" id="dob-start-date" name="search_citizen_dob_start" value="{{ search_params.search_citizen_dob_start }}">
+                            <label for="dob-end-date">End Date:</label>
+                            <input type="date" id="dob-end-date" name="search_citizen_dob_end" value="{{ search_params.search_citizen_dob_end }}">
+                        {% elif search_params.search_citizen_gender %}
+                            <label for="citizen-gender">Gender:</label>
+                            <input type="text" id="citizen-gender" name="search_citizen_gender" placeholder="Enter gender" value="{{ search_params.search_citizen_gender }}">
+                        {% elif search_params.search_citizen_category %}
+                            <label for="citizen-category">Category:</label>
+                            <input type="text" id="citizen-category" name="search_citizen_category" placeholder="Enter category" value="{{ search_params.search_citizen_category }}">
+                        {% elif search_params.search_citizen_income_min or search_params.search_citizen_income_max %}
+                            <label for="citizen-income-min">Minimum Income:</label>
+                            <input type="number" id="citizen-income-min" name="search_citizen_income_min" placeholder="Enter minimum income" value="{{ search_params.search_citizen_income_min }}">
+                            <label for="citizen-income-max">Maximum Income:</label>
+                            <input type="number" id="citizen-income-max" name="search_citizen_income_max" placeholder="Enter maximum income" value="{{ search_params.search_citizen_income_max }}">
+                        {% elif search_params.search_citizen_occupation %}
+                            <label for="citizen-occupation">Occupation:</label>
+                            <input type="text" id="citizen-occupation" name="search_citizen_occupation" placeholder="Enter occupation" value="{{ search_params.search_citizen_occupation }}">
+                        {% endif %}
+                    </div>
+                    
+                    <button type="submit" class="submit-button" id="ctzn-submit-button">Submit</button>
+                </form>
             </div>
             
             <table>
@@ -166,18 +192,16 @@
                         <td>{{ record.gender }}</td>
                         <td>{{ record.dob }}</td>
                         <td>
-                            <button onclick="location.href='updateCitizen/?ctzn_id={{ record.id }}'" style="background-color: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px; margin-top: 10px;" >Update</button>
+                            <button onclick="location.href='updateCitizen/?ctzn_id={{ record.id }}'" style="background-color: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px; margin-top: 10px;">Update</button>
                         </td>
                     </tr>
                     {% endfor %}
-                    <!-- Repeat for 4 more rows -->
                 </tbody>
             </table>
+            
             <button class="button" onclick="location.href='addcitizen'">Add New Citizen</button>
         </div>
     </div>
-
-
         <div class="accordion">
             <div class="accordion-header">Lands</div>
             <div class="accordion-content">
@@ -369,29 +393,40 @@
         </div>
     </div>
     
-
     <div class="accordion">
         <div class="accordion-header">Scheme Enrollment</div>
         <div class="accordion-content">
             <div class="container">
-                <label for="scheme-attribute-select">Choose an attribute:</label>
-                <select id="scheme-attribute-select" onchange="schemeShowInputFields()">
-                    <option value="">--Select an attribute--</option>
-                    <option value="member-name">Member Name</option>
-                    <option value="scheme-name">Scheme Name</option>
-                </select>
-        
-                <div id="scheme-input-fields" class="input-fields"></div>
-                
-                <button class="submit-button" id="scheme-submit-button" onclick="submitForm()">Submit</button>
+                <form id="scheme-search-form" method="POST" action="{% url 'panchayat_employees' %}">
+                    {% csrf_token %}
+                    <label for="scheme-attribute-select">Choose an attribute:</label>
+                    <select id="scheme-attribute-select" name="search_attribute" onchange="schemeShowInputFields()">
+                        <option value="">--Select an attribute--</option>
+                        <option value="member-name" {% if search_params.search_scheme_member %}selected{% endif %}>Member Name</option>
+                        <option value="scheme-name" {% if search_params.search_scheme_name %}selected{% endif %}>Scheme Name</option>
+                    </select>
+    
+                    <div id="scheme-input-fields" class="input-fields">
+                        {% if search_params.search_scheme_member %}
+                            <label for="scheme-member-name">Member Name:</label>
+                            <input type="text" id="scheme-member-name" name="search_scheme_member" placeholder="Enter member name" value="{{ search_params.search_scheme_member }}">
+                        {% elif search_params.search_scheme_name %}
+                            <label for="scheme-name">Scheme Name:</label>
+                            <input type="text" id="scheme-name" name="search_scheme_name" placeholder="Enter scheme name" value="{{ search_params.search_scheme_name }}">
+                        {% endif %}
+                    </div>
+                    
+                    <button type="submit" class="submit-button" id="scheme-submit-button">Submit</button>
+                </form>
             </div>
+            
             <table>
                 <thead>
                     <tr>
                         <th>Sno</th>
                         <th>Scheme ID</th>
                         <th>Scheme Name</th>
-                        <th>Members </th>
+                        <th>Members</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -403,16 +438,15 @@
                         <td>{{ record.members }}</td>
                     </tr>
                     {% endfor %}
-                    <!-- Repeat for 4 more rows -->
                 </tbody>
             </table>
+            
             <button class="button" onclick="location.href='enrolltoschemes'">Enroll a person to scheme</button>
             <div class="button up">
-                <a href="{% url 'enroll_eligible_members' %}" style=" color: white; border: none; cursor: pointer; border-radius: 5px; text-decoration: none;margin:20px;">
+                <a href="{% url 'enroll_eligible_members' %}" style="color: white; border: none; cursor: pointer; border-radius: 5px; text-decoration: none; margin: 20px;">
                     Enroll Eligible Citizens
-                 </a>
+                </a>
             </div>
-            
         </div>
     </div>
 
@@ -618,34 +652,36 @@
 
             if (selectedValue === 'dob') {
                 inputFields.innerHTML = `
-                    <label for="from-date">From Date:</label>
-                    <input type="date" id="from-date">
-                    <label for="to-date">To Date:</label>
-                    <input type="date" id="to-date">
+                    <label for="dob-start-date">Start Date:</label>
+                    <input type="date" id="dob-start-date" name="search_citizen_dob_start">
+                    <label for="dob-end-date">End Date:</label>
+                    <input type="date" id="dob-end-date" name="search_citizen_dob_end">
                 `;
             } else if (selectedValue === 'gender') {
                 inputFields.innerHTML = `
-                    <label for="gender">Gender:</label>
-                    <input type="text" id="gender" placeholder="Enter gender">
+                    <label for="citizen-gender">Gender:</label>
+                    <input type="text" id="citizen-gender" name="search_citizen_gender" placeholder="Enter gender">
                 `;
             } else if (selectedValue === 'category') {
                 inputFields.innerHTML = `
-                    <label for="category">Category:</label>
-                    <input type="text" id="category" placeholder="Enter category">
+                    <label for="citizen-category">Category:</label>
+                    <input type="text" id="citizen-category" name="search_citizen_category" placeholder="Enter category">
                 `;
             } else if (selectedValue === 'income') {
                 inputFields.innerHTML = `
                     <label for="min-income">Minimum Income:</label>
-                    <input type="number" id="min-income" placeholder="Enter minimum income">
+                    <input type="number" id="min-income" name="search_citizen_income_min" placeholder="Enter minimum income">
                     <label for="max-income">Maximum Income:</label>
-                    <input type="number" id="max-income" placeholder="Enter maximum income">
+                    <input type="number" id="max-income" name="search_citizen_income_max" placeholder="Enter maximum income">
                 `;
             } else if (selectedValue === 'occupation') {
                 inputFields.innerHTML = `
-                    <label for="occupation">Occupation:</label>
-                    <input type="text" id="occupation" placeholder="Enter occupation">
+                    <label for="citizen-occupation">Occupation:</label>
+                    <input type="text" id="citizen-occupation" name="search_citizen_occupation" placeholder="Enter occupation">
                 `;
             }
+        
+            // Show the input fields if any are added
             inputFields.style.display = inputFields.innerHTML ? 'block' : 'none';
         }
         function landShowInputFields() {
@@ -743,12 +779,12 @@
             if (selectedValue === 'member-name') {
                 inputFields.innerHTML = `
                     <label for="scheme-member-name">Member Name:</label>
-                    <input type="text" id="scheme-member-name" placeholder="Enter member name">
+                    <input type="text" id="scheme-member-name" name="search_scheme_member" placeholder="Enter member name">
                 `;
             } else if (selectedValue === 'scheme-name') {
                 inputFields.innerHTML = `
                     <label for="scheme-scheme-name">Scheme Name:</label>
-                    <input type="text" id="scheme-scheme-name" placeholder="Enter scheme name">
+                    <input type="text" id="scheme-scheme-name" name="search_scheme_name" placeholder="Enter scheme name">
                 `;
             }
 

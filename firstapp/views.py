@@ -359,16 +359,68 @@ def panemp(request):
         cur = conn.cursor()
         # logging.debug("Database connection established.")
 
-        # Fetch citizens data
+        if request.method == "POST":
+            search_citizen_dob_start = request.POST.get("search_citizen_dob_start", "").strip()
+            search_citizen_dob_end = request.POST.get("search_citizen_dob_end", "").strip()
+            search_citizen_gender = request.POST.get("search_citizen_gender", "").strip()
+            search_citizen_category = request.POST.get("search_citizen_category", "").strip()
+            search_citizen_income_min = request.POST.get("search_citizen_income_min", "").strip()
+            search_citizen_income_max = request.POST.get("search_citizen_income_max", "").strip()
+            search_citizen_occupation = request.POST.get("search_citizen_occupation", "").strip()
+        else:
+            search_citizen_dob_start = ""
+            search_citizen_dob_end = ""
+            search_citizen_gender = ""
+            search_citizen_category = ""
+            search_citizen_income_min = ""
+            search_citizen_income_max = ""
+            search_citizen_occupation = ""
+
+        # Base query to fetch citizens data
         query = """
-        SELECT id,nm,gender,dob
+        SELECT id, nm, gender, dob
         FROM citizens
-        WHERE date_of_death  IS  NULL;
+        WHERE date_of_death IS NULL
         """
-        # logging.debug(f"Executing query: {query}")
-        cur.execute(query)
+
+        query_params = []
+
+        # Append filters based on search parameters
+        if search_citizen_dob_start and search_citizen_dob_end:
+            query += " AND dob BETWEEN %s AND %s"
+            query_params.append(search_citizen_dob_start)
+            query_params.append(search_citizen_dob_end)
+        elif search_citizen_dob_start:
+            query += " AND dob >= %s"
+            query_params.append(search_citizen_dob_start)
+        elif search_citizen_dob_end:
+            query += " AND dob <= %s"
+            query_params.append(search_citizen_dob_end)
+
+        if search_citizen_gender:
+            query += " AND gender ILIKE %s"
+            query_params.append(f"%{search_citizen_gender}%")
+
+        if search_citizen_category:
+            query += " AND category ILIKE %s"  # Assuming 'category' is a column in the citizens table
+            query_params.append(f"%{search_citizen_category}%")
+
+        if search_citizen_income_min:
+            query += " AND income >= %s"  # Assuming 'income' is a column in the citizens table
+            query_params.append(search_citizen_income_min)
+
+        if search_citizen_income_max:
+            query += " AND income <= %s"  # Assuming 'income' is a column in the citizens table
+            query_params.append(search_citizen_income_max)
+
+        if search_citizen_occupation:
+            query += " AND occupation ILIKE %s"  # Assuming 'occupation' is a column in the citizens table
+            query_params.append(f"%{search_citizen_occupation}%")
+
+        # Execute the query
+        logging.debug(f"Executing query: {query} with params: {query_params}")
+        cur.execute(query, query_params)
         c_data = cur.fetchall()
-        # logging.debug(f"Query executed successfully. Retrieved {len(data)} records.")
 
         if request.method == "POST":
             search_land_id = request.POST.get("search_land_id", "").strip()
@@ -519,7 +571,15 @@ def panemp(request):
         
 
         #query to scheme members 
-        query = """
+        if request.method == "POST":
+            search_scheme_member = request.POST.get("search_scheme_member", "").strip()
+            search_scheme_name = request.POST.get("search_scheme_name", "").strip()
+        else:
+            search_scheme_member = ""
+            search_scheme_name = ""
+
+        # Base query to fetch scheme members
+        sch_query = """
         SELECT 
             ws.scheme_id,
             ws.nm AS scheme_name,
@@ -530,12 +590,31 @@ def panemp(request):
             scheme_enrollment se ON ws.scheme_id = se.scheme_id
         LEFT JOIN 
             citizens c ON se.citizen_id = c.ID
+        WHERE 1=1
+        """
+
+        sch_query_params = []
+
+        # Append filters based on search parameters
+        if search_scheme_member:
+            sch_query += " AND c.nm ILIKE %s"
+            sch_query_params.append(f"%{search_scheme_member}%")
+
+        if search_scheme_name:
+            sch_query += " AND ws.nm ILIKE %s"
+            sch_query_params.append(f"%{search_scheme_name}%")
+
+        # Group by scheme_id and scheme_name
+        sch_query += """
         GROUP BY 
             ws.scheme_id, ws.nm
         ORDER BY 
             ws.scheme_id;
         """
-        cur.execute(query)
+
+        # Execute the query
+        logging.debug(f"Executing query: {sch_query} with params: {sch_query_params}")
+        cur.execute(sch_query, sch_query_params)
         sch_data = cur.fetchall()
 
         #query to schemes
@@ -651,6 +730,15 @@ def panemp(request):
             "search_certificate_type": search_certificate_type,
             "search_certificate_start_date": search_certificate_start_date,
             "search_certificate_end_date": search_certificate_end_date,
+            "search_scheme_member": search_scheme_member,
+            "search_scheme_name": search_scheme_name,
+            "search_citizen_dob_start": search_citizen_dob_start,
+            "search_citizen_dob_end": search_citizen_dob_end,
+            "search_citizen_gender": search_citizen_gender,
+            "search_citizen_category": search_citizen_category,
+            "search_citizen_income_min": search_citizen_income_min,
+            "search_citizen_income_max": search_citizen_income_max,
+            "search_citizen_occupation": search_citizen_occupation,
         }
 
     except psycopg2.Error as e:
