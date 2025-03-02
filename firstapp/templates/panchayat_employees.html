@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panchayat Employee Main Page</title>
     <style>
@@ -37,6 +38,42 @@
             border-top: 1px solid #ccc;
             background-color: white;
         }
+        .search-container {
+            width: 35%;
+            display: flex;
+            align-items: center;
+            border: 1px solid #ccc;
+            border-radius: 25px;
+            overflow: hidden;
+            background-color: #fff;
+        }
+
+        .search-input {
+            
+            border: none;
+            padding: 10px 15px;
+            font-size: 16px;
+            outline: none;
+            flex: 1;
+        }
+
+        .search-button {
+            background-color: #007bff;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            color: white;
+            font-size: 16px;
+            border-radius: 0 25px 25px 0;
+        }
+
+        .search-button i {
+            margin: 0;
+        }
+
+        .search-button:hover {
+            background-color: #0056b3;
+        }
         table {
             width: 100%;
             border-collapse: collapse;
@@ -59,6 +96,10 @@
         .button:hover {
             background-color: #45a049;
         }
+        .up{
+            width:25%;
+            text-align:center;
+        }
     </style>
 </head>
 <body>
@@ -68,7 +109,22 @@
     <div class="accordion">
         <div class="accordion-header">Citizens</div>
         <div class="accordion-content">
-            <input type="text" placeholder="Search Citizens" />
+            <div class="search-container">
+                <input type="text" placeholder="Search..." class="search-input">
+                <button class="search-button">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+            <label for="attribute-select">Choose an attribute:</label>
+            <select id="attribute-select" onchange="showInputFields()">
+                <option value="">--Select an attribute--</option>
+                <option value="dob">Date of Birth</option>
+                <option value="gender">Gender</option>
+                <option value="category">Category</option>
+                <option value="income">Income</option>
+                <option value="occupation">Occupation</option>
+            </select>
+            <div id="input-fields" class="input-fields"></div>
             <table>
                 <thead>
                     <tr>
@@ -211,7 +267,12 @@
                     {% endfor %}
                 </tbody>
             </table>
-            <button class="button">Update All</button>
+            <div class="button up">
+                <a href="{% url 'update_all_taxes' %}" style=" color: white; border: none; cursor: pointer; border-radius: 5px; text-decoration: none;margin:20px;">
+                    Update Taxes
+                 </a>
+            </div>
+            
         </div>
     </div>
 
@@ -263,16 +324,22 @@
                         <td>{{ record.sno }}</td>
                         <td>{{ record.wel_id }}</td>
                         <td>{{ record.wel_name }}</td>
-                        <td>
-                            <a href="{% url 'delete_scheme' record.wel_id %}" 
-                            style="background-color:rgb(248, 5, 5); color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px; text-decoration: none;">
-                            Delete
-                            </a>
+                        <td style="display: flex; gap: 10px; align-items: center;">
+
                             <button onclick="location.href='viewscheme/?wel_id={{ record.wel_id }}'" 
-                                style="background-color: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px; margin-top: 10px;">
+                                    style="background-color: #4CAF50; color: white; padding: 10px; border: none; 
+                                           cursor: pointer; border-radius: 5px;">
                                 View Scheme
                             </button>
-                        </td>
+
+                            <a href="{% url 'delete_scheme' record.wel_id %}" 
+                               style="background-color: rgb(248, 5, 5); color: white; padding: 10px; border: none; 
+                                      cursor: pointer; border-radius: 5px; text-decoration: none;">
+                                Delete
+                            </a>
+                        
+                            
+                        </td>                        
                     </tr>
                     {% endfor %}
                     <!-- Repeat for 4 more rows -->
@@ -294,6 +361,7 @@
                         <th>Asset Name</th>
                         <th>Location</th>
                         <th>Expenditure</th>
+                        <th>Status</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -305,9 +373,18 @@
                         <td>{{ record.ast_name }}</td>
                         <td>{{ record.loc }}</td>
                         <td>{{ record.exp }}</td>
-                        <td>
-                            <button style="background-color: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px; margin-top: 10px;">Edit</button>
-                            <button style="background-color: red; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px; margin-top: 10px;">Delete</button>
+                        <td>{{ record.stat }}</td>
+                        <td style="display: flex; flex-direction: column; gap: 10px;">
+                            <button onclick="location.href='edit_asset/?asset_id={{ record.ast_id }}'"
+                                    style="background-color: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px;">
+                                Edit Expenditure
+                            </button>
+
+                            <a href="{% url 'delete_asset' record.ast_id %}" 
+                                style="background-color: rgb(248, 5, 5); color: white; padding: 10px; border: none; cursor: pointer; border-radius: 4px; text-decoration: none;text-align:center;">
+                                Delete
+                            </a>
+
                         </td>
                     </tr>
                     {% endfor %}
@@ -350,7 +427,7 @@
 
 
     <button class="button" style="display: block; margin: 20px auto;" onclick="location.href='villagedashboard'">Village Dashboard</button>
-    <button class="button" style="display: block; margin: 20px auto;" >Update year data</button>
+    <button class="button" style="display: block; margin: 20px auto;" onclick="location.href='logout'">Logout</button>
     <script>
         // JavaScript for accordion functionality
         const accordions = document.querySelectorAll('.accordion-header');
@@ -360,6 +437,48 @@
                 content.style.display = content.style.display === 'block' ? 'none' : 'block';
             });
         });
+        function showInputFields() {
+            const attributeSelect = document.getElementById('attribute-select');
+            const inputFields = document.getElementById('input-fields');
+            inputFields.innerHTML = ''; // Clear previous input fields
+
+            const selectedValue = attributeSelect.value;
+
+            if (selectedValue === 'dob') {
+                inputFields.innerHTML = `
+                    <label for="from-date">From Date:</label>
+                    <input type="date" id="from-date">
+                    <label for="to-date">To Date:</label>
+                    <input type="date" id="to-date">
+                `;
+            } else if (selectedValue === 'gender') {
+                inputFields.innerHTML = `
+                    <label for="gender">Gender:</label>
+                    <input type="text" id="gender" placeholder="Enter gender">
+                `;
+            } else if (selectedValue === 'category') {
+                inputFields.innerHTML = `
+                    <label for="category">Category:</label>
+                    <input type="text" id="category" placeholder="Enter category">
+                `;
+            } else if (selectedValue === 'income') {
+                inputFields.innerHTML = `
+                    <label for="min-income">Minimum Income:</label>
+                    <input type="number" id="min-income" placeholder="Enter minimum income">
+                    <label for="max-income">Maximum Income:</label>
+                    <input type="number" id="max-income" placeholder="Enter maximum income">
+                `;
+            } else if (selectedValue === 'occupation') {
+                inputFields.innerHTML = `
+                    <label for="occupation">Occupation:</label>
+                    <input type="text" id="occupation" placeholder="Enter occupation">
+                `;
+            }
+
+            // Show the input fields if any are added
+            inputFields.style.display = inputFields.innerHTML ? 'block' : 'none';
+        }
+
     </script>
 
 </body> 

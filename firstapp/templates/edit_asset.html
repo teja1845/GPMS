@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Asset Expenditure</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+        }
+
+        .form-container {
+            max-width: 500px;
+            margin: auto;
+            padding: 30px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 2px 2px 12px #aaa;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        input[type="text"], input[type="date"], input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+        }
+
+        button {
+            padding: 10px 15px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        #bck {
+            background-color: red;
+        }
+
+        #bck:hover {
+            background-color: rgb(193, 4, 4);
+        }
+
+        .readonly {
+            background-color: #f3f3f3;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    <h2>Edit Asset Expenditure</h2>
+
+    {% if asset %}
+        <form method="POST" action="{% url 'edit_asset' %}">
+            {% csrf_token %}
+
+            <input type="hidden" name="asset_id" value="{{ asset.id }}">
+
+            <label>Asset Type:</label>
+            <input type="text" class="readonly" value="{{ asset.type_a }}" readonly>
+
+            <label>Location:</label>
+            <input type="text" class="readonly" value="{{ asset.locn }}" readonly>
+
+            <label>Installation Date:</label>
+            <input type="date" class="readonly" value="{{ asset.installation_date }}" readonly>
+
+            <label>Status:</label>
+            <input type="text" class="readonly" value="{{ asset.stat }}" readonly>
+
+            <label>Demolition Date:</label>
+            <input type="date" class="readonly" value="{{ asset.demolition_date }}" readonly>
+
+            <label>Scrap Cost:</label>
+            <input type="number" class="readonly" value="{{ asset.scrap_cost }}" readonly>
+
+            <h3>Add Expenditure</h3>
+            <label>Amount Spent:</label>
+            <input type="number" name="amount_spent" step="0.01" required>
+
+            <label>Spent Date:</label>
+            <input type="date" name="spent_date" required>
+
+            <button type="submit">Update Expenditure</button>
+            <button id="bck" onclick="location.href='/panchayat_employees'">Back</button>
+        </form>
+    {% else %}
+        <p>No asset data found.</p>
+    {% endif %}
+
+</div>
+
+</body>
+</html>
