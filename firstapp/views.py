@@ -151,13 +151,19 @@ def login(request):
 
 # View to display Village Dashboard with Panchayat Employee Contacts
 def village_dashboard(request):
-    # logging.debug("village_dashboard view called.")  # Debugging Start
+    # Initialize variables with default empty values
+    records = []
+    assets_records = []
+    scheme_records = []
+    population_records = []
+    income_records = []
+    expenditure_records = []
 
     try:
-        # logging.debug("Connecting to the database...")
+        logging.debug("Connecting to the database...")
         conn = get_db_connection()
         cur = conn.cursor()
-        # logging.debug("Database connection established.")
+        logging.debug("Database connection established.")
 
         # Fetch Panchayat Employees data
         query = """
@@ -167,29 +173,181 @@ def village_dashboard(request):
         INNER JOIN citizen_mobile AS cm ON c.id = cm.citizen_id 
         GROUP BY pe.id, c.nm, pe.job_role;
         """
-        # logging.debug(f"Executing query: {query}")
+        logging.debug(f"Executing query: {query}")
         cur.execute(query)
         data = cur.fetchall()
-        # logging.debug(f"Query executed successfully. Retrieved {len(data)} records.")
-
-        cur.close()
-        conn.close()
-        # logging.debug("Database connection closed.")
+        logging.debug(f"Query executed successfully. Retrieved {len(data)} records.")
 
         # Convert data into a list of dictionaries
         column_names = ["name", "mobile_number", "designation"]
         records = [dict(zip(column_names, row)) for row in data]
-        
-        # logging.debug(f"Processed records: {records}")  # Debugging Output
+
+        try:
+            assets_query = """
+            SELECT type_a, locn
+            FROM assets 
+            WHERE stat = 'active';
+            """
+            cur.execute(assets_query)
+            assets_data = cur.fetchall()
+
+            # Convert data of asset
+            assets_column_names = ["type_a", "locn"]
+            assets_records = [dict(zip(assets_column_names, row)) for row in assets_data]
+        except Exception as e:
+            logging.error(f"Error fetching assets data: {e}")
+            messages.error(request, f"Error fetching assets data: {e}")
+
+        try:
+            schemes_query = """
+            SELECT 
+                nm, 
+                eligible_age_range, 
+                eligible_gender, 
+                eligible_occupation,
+                eligible_income,
+                eligible_land_area, 
+                scheme_amt 
+            FROM 
+                welfare_scheme;  
+            """
+            cur.execute(schemes_query)
+            schemes_data = cur.fetchall()
+
+            # Convert schemes data 
+            schemes_column_names = ["nm", "eligible_age_range", "eligible_gender", "eligible_occupation","eligible_income","eligible_land_area", "scheme_amt"]
+            scheme_records = [dict(zip(schemes_column_names, row)) for row in schemes_data]
+        except Exception as e:
+            logging.error(f"Error fetching schemes data: {e}")
+            messages.error(request, f"Error fetching schemes data: {e}")
+
+        try:
+            population_query = """
+                SELECT 
+                    COUNT(*) AS total_population,
+                    SUM(CASE WHEN gender = 'Male' THEN 1 ELSE 0 END) AS male_population,
+                    SUM(CASE WHEN gender = 'Female' THEN 1 ELSE 0 END) AS female_population,
+                    SUM(CASE WHEN EXTRACT(YEAR FROM AGE(CURRENT_DATE, DOB)) <= 18 THEN 1 ELSE 0 END) AS children_population
+                FROM 
+                    citizens
+                WHERE 
+                    DOB <= CURRENT_DATE
+                    AND (date_of_death >= '2025-01-01' OR date_of_death IS NULL);
+            """
+            cur.execute(population_query)
+            population_data = cur.fetchall()
+
+            #Convert population data
+            population_column_names = ["total_population", "male_population", "female_population", "children_population"]
+            population_records = [dict(zip(population_column_names, row)) for row in population_data]
+        except Exception as e:
+            logging.error(f"Error fetching population data: {e}")
+            messages.error(request, f"Error fetching population data: {e}")
+
+        try:
+            income_query = """
+            WITH tax AS (
+                SELECT EXTRACT(YEAR FROM th.trnsc_date)::INT AS year,
+                    SUM(th.amount_paid) AS tax
+                FROM transaction_history AS th
+                GROUP BY year
+            ),
+
+            scrap AS (
+                SELECT EXTRACT(YEAR FROM a.demolition_date)::INT AS year,
+                    SUM(a.scrap_cost) AS scrap
+                FROM assets AS a
+                GROUP BY year
+            )
+
+            SELECT 
+                COALESCE(t.tax, 0) AS Tax_Amount,
+                COALESCE(sc.scrap, 0) AS Scrap_Amount,
+                (COALESCE(t.tax, 0) + COALESCE(sc.scrap, 0)) AS Net_Worth
+            FROM 
+                tax t
+            LEFT JOIN 
+                scrap sc ON t.year = sc.year
+            WHERE 
+                t.year = 2024;
+            """
+            cur.execute(income_query)
+            income_data = cur.fetchall()
+
+            # Convert tax, scrap cost, and net income data
+            income_column_names = ["tax_amount", "scrap_amount", "net_income"]
+            income_records = [dict(zip(income_column_names, row)) for row in income_data]
+        except Exception as e:
+            logging.error(f"Error fetching income data: {e}")
+            messages.error(request, f"Error fetching income data: {e}")
+
+        try:
+            expenditure_query = """
+            WITH years AS (
+                SELECT 2024 AS year -- Directly specify the year 2024
+            ),
+
+            salaries AS ( 
+                SELECT 2024 AS year, SUM(pe.salary) AS total_salaries -- Adding year to ensure it can be joined
+                FROM panchayat_employees pe
+                WHERE pe.stat = 'active' -- Only consider active employees
+            ),
+
+            scheme_amounts AS (
+                SELECT 2024 AS year,
+                    SUM(ws.scheme_amt) AS total_scheme_amount
+                FROM scheme_enrollment se
+                JOIN welfare_scheme ws ON se.scheme_id = ws.scheme_id
+                WHERE EXTRACT(YEAR FROM se.enrollment_date) = 2024 -- Only for the year 2024
+                GROUP BY year
+            ),
+
+            asset_maintenance AS (
+                SELECT 2024 AS year, 
+                    SUM(ae.amount_spent) AS total_asset_maintenance
+                FROM assets_expenditure ae
+                WHERE EXTRACT(YEAR FROM ae.spent_date) = 2024 
+                    AND ae.spent_date < CURRENT_DATE -- Only consider expenditures before the current date
+                GROUP BY year
+            )
+
+            SELECT 
+                COALESCE(s.total_salaries, 0) AS Salaries,
+                COALESCE(sa.total_scheme_amount, 0) AS Scheme_Amounts,
+                COALESCE(am.total_asset_maintenance, 0) AS Asset_Maintenance
+            FROM years y
+            LEFT JOIN salaries s ON y.year = s.year
+            LEFT JOIN scheme_amounts sa ON y.year = sa.year
+            LEFT JOIN asset_maintenance am ON y.year = am.year;
+
+            """
+            cur.execute(expenditure_query)
+            expenditure_data = cur.fetchall()
+
+            # Convert salary, scheme amount, and asset maintenance data (expenditure data)
+            expenditure_column_names = ["salaries", "scheme_amount", "asset_maintenance"]
+            expenditure_records = [dict(zip(expenditure_column_names, row)) for row in expenditure_data]
+        except Exception as e:
+            logging.error(f"Error fetching expenditure data: {e}")
+            messages.error(request, f"Error fetching expenditure data: {e}")
+
+        cur.close()
+        conn.close()
+        logging.debug("Database connection closed.")
 
     except psycopg2.Error as e:
         error_message = f"Database error: {e}"
         logging.error(error_message)  # Log the error
         messages.error(request, error_message)
-        records = []
-
-    # logging.debug("Rendering villagedashboard.html with records.")
-    return render(request, "villagedashboard.html", {"records": records})
+    logging.debug("Rendering villagedashboard.html with records.")
+    return render(request, "villagedashboard.html", {
+        "records": records, 
+        "assets_records": assets_records, 
+        "scheme_records": scheme_records, 
+        "population_records": population_records, 
+        "income_records": income_records, 
+        "expenditure_records": expenditure_records
+    })
 
 def citizens(request):
     return render(request,"citizens.html")
@@ -212,22 +370,53 @@ def panemp(request):
         c_data = cur.fetchall()
         # logging.debug(f"Query executed successfully. Retrieved {len(data)} records.")
 
+        if request.method == "POST":
+            search_land_id = request.POST.get("search_land_id", "").strip()
+            search_land_type = request.POST.get("search_land_type", "").strip()
+            search_land_owner = request.POST.get("search_land_owner", "").strip()
+        else:
+            search_land_id = ""
+            search_land_type = ""
+            search_land_owner = ""
+   
         # Fetch land-ownership data
+        # Base query (always applied)
         query = """
         SELECT 
             la.ID as land_id,
             la.type_l as land_type,
-            STRING_AGG(c.nm,', ') as list_of_owners
+            STRING_AGG(c.nm, ', ') as list_of_owners
         FROM land_acres la
-        LEFT JOIN land_ownership lo on la.ID=lo.land_id
-        LEFT JOIN citizens c on lo.citizen_id=c.ID
+        LEFT JOIN land_ownership lo ON la.ID = lo.land_id
+        LEFT JOIN citizens c ON lo.citizen_id = c.ID
         WHERE lo.to_date IS NULL
-        GROUP BY la.ID,la.type_l;
         """
-        # logging.debug(f"Executing query: {query}")
-        cur.execute(query)
+        query_params = []
+
+        # Append filters only if search parameters are provided.
+        if search_land_id:
+            query += " AND la.ID = %s"
+            query_params.append(int(search_land_id))
+        
+        if search_land_type:
+    # For an exact match on Land Type
+            query += " AND la.type_l = %s"
+            query_params.append(search_land_type)
+        
+        if search_land_owner:
+            # Filtering by Owner Name
+            query += " AND c.nm ILIKE %s"
+            query_params.append(f"%{search_land_owner}%")
+        
+        # Append GROUP BY clause
+        query += " GROUP BY la.ID, la.type_l;"
+
+        logging.debug(f"Executing query: {query} with params: {query_params}")
+        
+        cur.execute(query, query_params)
         l_data = cur.fetchall()
-        # logging.debug(f"Query executed successfully. Retrieved {len(data)} records.")
+
+
         # Fetch certificate  data
         query = """
         SELECT
@@ -353,13 +542,19 @@ def panemp(request):
         house_records = [{"sno": idx + 1, **dict(zip(house_column_names[1:], row))} for idx, row in enumerate(house_data)]
         # logging.debug(f"Processed records: {records}")  # Debugging Output
 
+        search_params = {
+            "search_land_id": search_land_id,
+            "search_land_type": search_land_type,
+            "search_land_owner": search_land_owner,
+        }
+
     except psycopg2.Error as e:
         error_message = f"Database error: {e}"
         logging.error(error_message)  # Log the error
         messages.error(request, error_message)
         records=[]
 
-    return render(request,"panchayat_employees.html",{"citizens_record":citizens_records,"land_records":land_records,"cer_records":cer_records,"tax_records":txn_records,"wel_records":wel_records,"sch_records":sch_records,"assets_records":ast_records,"house_records":house_records})
+    return render(request,"panchayat_employees.html",{"citizens_record":citizens_records,"land_records":land_records,"search_params": search_params,"cer_records":cer_records,"tax_records":txn_records,"wel_records":wel_records,"sch_records":sch_records,"assets_records":ast_records,"house_records":house_records})
 
 def addcitizen(request):
     logging.debug("addcitizen view called.")
@@ -2682,6 +2877,63 @@ def previousOwners(request):
 
     logging.debug(f"Processed records: {records}")
     return render(request, "previousOwners.html", {"records": records})
+
+def addcomplaints(request):
+    logging.debug("addcomplaints view called.")
+    
+    # Check if the user is logged in
+    if request.session.get("flag") != 1:
+        messages.error(request, "You must be logged in to add a complaint.")
+        return redirect("login")
+    
+    if request.method == "POST":
+        citizen_id = request.session.get("id")  # Fetch Citizen ID from session
+        enrollment_date = date.today()
+        description = request.POST.get("description")
+
+        if not description:
+            messages.error(request, "Description cannot be empty.")
+            return redirect("addcomplaints")
+
+        try:
+            logging.debug("Attempting to connect to the database...")
+            conn = get_db_connection()
+            cur = conn.cursor()
+            logging.debug("Database connection established.")
+
+            # Insert Query
+            query = """
+                INSERT INTO complaints (citizen_id, enrolled_date, description)
+                VALUES (%s, %s, %s);
+            """
+            values = (citizen_id, enrollment_date, description)
+
+            logging.debug(f"Executing SQL Query: {query} with values {values}")
+            
+            cur.execute(query, values)
+            conn.commit()
+            logging.debug("Transaction committed successfully.")
+            
+            messages.success(request, "Complaint added successfully.")
+            return redirect("citizens")
+        
+        except psycopg2.IntegrityError as e:
+            conn.rollback()
+            logging.error(f"Foreign Key Violation: {e}")
+            messages.error(request, "Invalid Citizen ID. Please try again.")
+
+        except psycopg2.Error as e:
+            conn.rollback()
+            logging.error(f"Database error: {e}")
+            messages.error(request, "Database error occurred.")
+
+        finally:
+            if cur:
+                cur.close()
+            if conn:
+                conn.close()
+    
+    return render(request, "addcomplaints.html")
 
 
 def logout(request):

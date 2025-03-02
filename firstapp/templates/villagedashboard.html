@@ -127,18 +127,21 @@
                 </table>
             </div>
         </div>
+        
         <div class="accordion">
             <div class="accordion-header">Assets</div>
             <div class="accordion-content">
                 <table>
                     <tr>
-                        <th>Header 1</th>
-                        <th>Header 2</th>
+                        <th>Type of asset</th>
+                        <th>Location</th>
                     </tr>
+                    {% for record in assets_records %}
                     <tr>
-                        <td>Data 1</td>
-                        <td>Data 2</td>
+                        <td>{{ record.type_a }}</td>
+                        <td>{{ record.locn }}</td>
                     </tr>
+                    {% endfor %}
                 </table>
             </div>
         </div>
@@ -147,13 +150,25 @@
             <div class="accordion-content">
                 <table>
                     <tr>
-                        <th>Header 1</th>
-                        <th>Header 2</th>
+                        <th>Name</th>
+                        <th>Age range</th>
+                        <th>Gender</th>
+                        <th>Occupation</th>
+                        <th>Income</th>
+                        <th>Land</th>
+                        <th>Amount</th>
                     </tr>
+                    {% for record in scheme_records %}
                     <tr>
-                        <td>Data 1</td>
-                        <td>Data 2</td>
+                        <td>{{ record.nm }}</td>
+                        <td>{{ record.eligible_age_range }}</td>
+                        <td>{{ record.eligible_gender }}</td>
+                        <td>{{ record.eligible_occupation}}</td>
+                        <td>{{ record.eligible_income}}</td>
+                        <td>{{ record.eligible_land_area}}</td>
+                        <td>{{ record.scheme_amt }}</td>
                     </tr>
+                    {% endfor %}
                 </table>
             </div>
         </div>
@@ -162,13 +177,19 @@
             <div class="accordion-content">
                 <table>
                     <tr>
-                        <th>Header 1</th>
-                        <th>Header 2</th>
+                        <th>Total population</th>
+                        <th>Male</th>
+                        <th>Female</th>
+                        <th>Children</th>
                     </tr>
+                    {% for record in population_records %}
                     <tr>
-                        <td>Data 1</td>
-                        <td>Data 2</td>
+                        <td>{{ record.total_population }}</td>
+                        <td>{{ record.male_population }}</td>
+                        <td>{{ record.female_population }}</td>
+                        <td>{{ record.children_population}}</td>
                     </tr>
+                    {% endfor %}
                 </table>
             </div>
         </div>
@@ -177,13 +198,17 @@
             <div class="accordion-content">
                 <table>
                     <tr>
-                        <th>Header 1</th>
-                        <th>Header 2</th>
+                        <th>Taxes</th>
+                        <th>Scrap Cost</th>
+                        <th>Net Income</th>
                     </tr>
+                    {% for record in income_records %}
                     <tr>
-                        <td>Data 1</td>
-                        <td>Data 2</td>
+                        <td>{{ record.tax_amount }}</td>
+                        <td>{{ record.scrap_amount }}</td>
+                        <td>{{ record.net_income }}</td>
                     </tr>
+                    {% endfor %}
                 </table>
             </div>
         </div>
@@ -192,33 +217,26 @@
             <div class="accordion-content">
                 <table>
                     <tr>
-                        <th>Header 1</th>
-                        <th>Header 2</th>
+                        <th>Salaries</th>
+                        <th>Schemes amount</th>
+                        <th>Asset maintainance</th>
                     </tr>
+                    {% for record in expenditure_records %}
                     <tr>
-                        <td>Data 1</td>
-                        <td>Data 2</td>
+                        <td>{{ record.salaries }}</td>
+                        <td>{{ record.scheme_amount }}</td>
+                        <td>{{ record.asset_maintenance }}</td>
                     </tr>
-                </table>
-            </div>
-        </div>
-        <div class="accordion">
-            <div class="accordion-header">Vaccinations</div>
-            <div class="accordion-content">
-                <table>
-                    <tr>
-                        <th>Header 1</th>
-                        <th>Header 2</th>
-                    </tr>
-                    <tr>
-                        <td>Data 1</td>
-                        <td>Data 2</td>
-                    </tr>
+                    {% endfor %}
                 </table>
             </div>
         </div>
     </div>
-
+    </form>
+    <div class="btn">
+        <a href="{% if request.session.user_type == 'citizens' %}/citizens{% elif request.session.user_type == 'panchayat_employees' %}/panchayat_employees{% elif request.session.user_type == 'Admin' %}/Admin{% elif request.session.user_type == 'govt_monitors' %}/govt_monitors{% else %}/{% endif %}" >Back</a>
+    </div> 
+    </form>
     <script>
         // Accordion functionality
         document.querySelectorAll('.accordion-header').forEach(header => {
