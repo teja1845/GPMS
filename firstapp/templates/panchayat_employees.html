@@ -38,42 +38,6 @@
             border-top: 1px solid #ccc;
             background-color: white;
         }
-        .search-container {
-            width: 35%;
-            display: flex;
-            align-items: center;
-            border: 1px solid #ccc;
-            border-radius: 25px;
-            overflow: hidden;
-            background-color: #fff;
-        }
-
-        .search-input {
-            
-            border: none;
-            padding: 10px 15px;
-            font-size: 16px;
-            outline: none;
-            flex: 1;
-        }
-
-        .search-button {
-            background-color: #007bff;
-            border: none;
-            padding: 10px 15px;
-            cursor: pointer;
-            color: white;
-            font-size: 16px;
-            border-radius: 0 25px 25px 0;
-        }
-
-        .search-button i {
-            margin: 0;
-        }
-
-        .search-button:hover {
-            background-color: #0056b3;
-        }
         table {
             width: 100%;
             border-collapse: collapse;
@@ -100,6 +64,65 @@
             width:25%;
             text-align:center;
         }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 300px;
+        }
+
+        h1 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        label {
+            margin-bottom: 10px;
+            display: block;
+            font-weight: bold;
+            color: #333;
+        }
+
+        select, input[type="text"], input[type="date"], input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        select:focus, input[type="text"]:focus, input[type="date"]:focus, input[type="number"]:focus {
+            border-color: #4CAF50;
+            outline: none;
+        }
+
+        .input-fields {
+            display: none; /* Initially hide input fields */
+        }
+
+        .input-fields div {
+            margin-bottom: 10px;
+        }
+
+        /* Button styles */
+        .submit-button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+
+        .submit-button:hover {
+            background-color: #45a049;
+        }
     </style>
 </head>
 <body>
@@ -109,22 +132,20 @@
     <div class="accordion">
         <div class="accordion-header">Citizens</div>
         <div class="accordion-content">
-            <div class="search-container">
-                <input type="text" placeholder="Search..." class="search-input">
-                <button class="search-button">
-                    <i class="fas fa-search"></i>
-                </button>
+            <div class="container">
+                <label for="ctzn-attribute-select">Choose an attribute:</label>
+                 <select id="ctzn-attribute-select" onchange="citizenShowInputFields()">
+                     <option value="">--Select an attribute--</option>
+                     <option value="dob">Date of Birth</option>
+                     <option value="gender">Gender</option>
+                     <option value="category">Category</option>
+                     <option value="income">Income</option>
+                     <option value="occupation">Occupation</option>
+                 </select>
+                 <div id="ctzn-input-fields" class="input-fields"></div>
+                 <button class="submit-button" id="ctzn-submit-button"  onclick="submitForm()">Submit</button>
             </div>
-            <label for="attribute-select">Choose an attribute:</label>
-            <select id="attribute-select" onchange="showInputFields()">
-                <option value="">--Select an attribute--</option>
-                <option value="dob">Date of Birth</option>
-                <option value="gender">Gender</option>
-                <option value="category">Category</option>
-                <option value="income">Income</option>
-                <option value="occupation">Occupation</option>
-            </select>
-            <div id="input-fields" class="input-fields"></div>
+            
             <table>
                 <thead>
                     <tr>
@@ -159,8 +180,19 @@
     <div class="accordion">
         <div class="accordion-header">Lands</div>
         <div class="accordion-content">
-            <input type="text" placeholder="Search Land" />
-            <input type="text" placeholder="Search Owner" />
+            <div class="container">
+                <label for="land-attribute-select">Choose an attribute:</label>
+                <select id="land-attribute-select" onchange="landShowInputFields()">
+                    <option value="">--Select an attribute--</option>
+                    <option value="land-id">Land ID</option>
+                    <option value="owner-name">Owner Name</option>
+                    <option value="type">Type</option>
+                </select>
+        
+                <div id="land-input-fields" class="input-fields"></div>
+                
+                <button class="submit-button" id="land-submit-button" onclick="submitForm()">Submit</button>
+            </div>
             <table>
                 <thead>
                     <tr>
@@ -194,8 +226,19 @@
     <div class="accordion">
         <div class="accordion-header">Certificates</div>
         <div class="accordion-content">
-            <input type="text" placeholder="Search Certificate" />
-            <input type="text" placeholder="Search Issuer" />
+            <div class="container">
+                <label for="certificate-attribute-select">Choose an attribute:</label>
+                <select id="certificate-attribute-select" onchange="certificateShowInputFields()">
+                    <option value="">--Select an attribute--</option>
+                    <option value="name">Name</option>
+                    <option value="type">Type</option>
+                    <option value="issued-between">Issued Between</option>
+                </select>
+        
+                <div id="certificate-input-fields" class="input-fields"></div>
+                
+                <button class="submit-button" id="certificate-submit-button" onclick="submitForm()">Submit</button>
+            </div>
             <table>
                 <thead>
                     <tr>
@@ -432,9 +475,9 @@
                 content.style.display = content.style.display === 'block' ? 'none' : 'block';
             });
         });
-        function showInputFields() {
-            const attributeSelect = document.getElementById('attribute-select');
-            const inputFields = document.getElementById('input-fields');
+        function citizenShowInputFields() {
+            const attributeSelect = document.getElementById('ctzn-attribute-select');
+            const inputFields = document.getElementById('ctzn-input-fields');
             inputFields.innerHTML = ''; // Clear previous input fields
 
             const selectedValue = attributeSelect.value;
@@ -469,11 +512,67 @@
                     <input type="text" id="occupation" placeholder="Enter occupation">
                 `;
             }
+        }
+        function landShowInputFields() {
+            const attributeSelect = document.getElementById('land-attribute-select');
+            const inputFields = document.getElementById('land-input-fields');
+            inputFields.innerHTML = ''; // Clear previous input fields
+
+            const selectedValue = attributeSelect.value;
+
+            if (selectedValue === 'land-id') {
+                inputFields.innerHTML = `
+                    <label for="land-id">Land ID:</label>
+                    <input type="number" id="land-id" placeholder="Enter land ID">
+                `;
+            } else if (selectedValue === 'owner-name') {
+                inputFields.innerHTML = `
+                    <label for="owner-name">Owner Name:</label>
+                    <input type="text" id="owner-name" placeholder="Enter owner name">
+                `;
+            } else if (selectedValue === 'type') {
+                inputFields.innerHTML = `
+                    <label for="type">Type:</label>
+                    <input type="text" id="type" placeholder="Enter type">
+                `;
+            }
 
             // Show the input fields if any are added
             inputFields.style.display = inputFields.innerHTML ? 'block' : 'none';
         }
+        function certificateShowInputFields() {
+            const attributeSelect = document.getElementById('certificate-attribute-select');
+            const inputFields = document.getElementById('certificate-input-fields');
+            inputFields.innerHTML = ''; // Clear previous input fields
 
+            const selectedValue = attributeSelect.value;
+
+            if (selectedValue === 'name') {
+                inputFields.innerHTML = `
+                    <label for="certificate-name">Name:</label>
+                    <input type="text" id="certificate-name" placeholder="Enter name">
+                `;
+            } else if (selectedValue === 'type') {
+                inputFields.innerHTML = `
+                    <label for="certificate-type">Type:</label>
+                    <input type="text" id="certificate-type" placeholder="Enter type">
+                `;
+            } else if (selectedValue === 'issued-between') {
+                inputFields.innerHTML = `
+                    <label for="start-date">Start Date:</label>
+                    <input type="date" id="start-date">
+                    <label for="end-date">End Date:</label>
+                    <input type="date" id="end-date">
+                `;
+            }
+
+            // Show the input fields if any are added
+            inputFields.style.display = inputFields.innerHTML ? 'block' : 'none';
+        }
+        function submitForm() {
+            // You can add your form submission logic here
+            alert("Form submitted!");
+        }
     </script>
 
 </body> 
