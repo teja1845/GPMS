@@ -177,51 +177,69 @@
         </div>
     </div>
 
-    <div class="accordion">
-        <div class="accordion-header">Lands</div>
-        <div class="accordion-content">
-            <div class="container">
-                <label for="land-attribute-select">Choose an attribute:</label>
-                <select id="land-attribute-select" onchange="landShowInputFields()">
-                    <option value="">--Select an attribute--</option>
-                    <option value="land-id">Land ID</option>
-                    <option value="owner-name">Owner Name</option>
-                    <option value="type">Type</option>
-                </select>
-        
-                <div id="land-input-fields" class="input-fields"></div>
+    <form id="land-search-form" method="POST" action="{% url 'panchayat_employees' %}">
+        {% csrf_token %}
+        <div class="accordion">
+            <div class="accordion-header">Lands</div>
+            <div class="accordion-content">
+                <div class="container">
+                    <!-- Dropdown for selecting which attribute to search by -->
+                    <label for="land-attribute-select">Choose an attribute:</label>
+                    <select id="land-attribute-select" name="search_attribute" onchange="landShowInputFields()">
+                        <option value="">--Select an attribute--</option>
+                        <option value="land-id" {% if search_params.search_land_id %}selected{% endif %}>Land ID</option>
+                        <option value="owner-name" {% if search_params.search_land_owner %}selected{% endif %}>Owner Name</option>
+                        <option value="type" {% if search_params.search_land_type %}selected{% endif %}>Type</option>
+                    </select>
+    
+                    <!-- This container will hold the dynamic input field -->
+                    <div id="land-input-fields" class="input-fields">
+                        {% if search_params.search_land_id %}
+                            <label for="land-id">Land ID:</label>
+                            <input type="number" id="land-id" name="search_land_id" placeholder="Enter land ID" value="{{ search_params.search_land_id }}">
+                        {% elif search_params.search_land_owner %}
+                            <label for="owner-name">Owner Name:</label>
+                            <input type="text" id="owner-name" name="search_land_owner" placeholder="Enter owner name" value="{{ search_params.search_land_owner }}">
+                        {% elif search_params.search_land_type %}
+                            <label for="type">Type:</label>
+                            <input type="text" id="type" name="search_land_type" placeholder="Enter type" value="{{ search_params.search_land_type }}">
+                        {% endif %}
+                    </div>
+    
+                    <button type="submit" class="submit-button" id="land-submit-button">Submit</button>
+                </div>
                 
-                <button class="submit-button" id="land-submit-button" onclick="submitForm()">Submit</button>
+                <!-- Your table displaying land records -->
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Sno</th>
+                            <th>ID</th>
+                            <th>Type</th>
+                            <th>List of Owners</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in land_records %}
+                        <tr>
+                            <td>{{ record.sno }}</td>
+                            <td>{{ record.id }}</td>
+                            <td>{{ record.type }}</td>
+                            <td>{{ record.list_owners }}</td>
+                            <td>
+                                <button onclick="location.href='updateLand/?land_id={{ record.id }}'" style="background-color: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px; margin-top: 10px;">Update</button>
+                                <button onclick="location.href='previousOwners/?land_id={{ record.id }}'" style="background-color: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px; margin-top: 10px;">Previous Records</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <button class="button" onclick="location.href='addland'">Add New Lands</button>
             </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Sno</th>
-                        <th>ID</th>
-                        <th>Type</th>
-                        <th>List of Owners</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for record in land_records %}
-                    <tr>
-                        <td>{{ record.sno }}</td>
-                        <td>{{ record.id }}</td>
-                        <td>{{ record.type }}</td>
-                        <td>{{ record.list_owners }}</td>
-                        <td>
-                            <button onclick="location.href='updateLand/?land_id={{ record.id }}'" style="background-color: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px; margin-top: 10px;">Update</button>
-                            <button onclick="location.href='previousOwners/?land_id={{ record.id }}'" style="background-color: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px; margin-top: 10px;">Previous Records</button>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                    <!-- Repeat for 4 more rows -->
-                </tbody>
-            </table>
-            <button class="button" onclick="location.href='addland'">Add New Lands</button>
         </div>
-    </div>
+    </form>
+    
 
     <div class="accordion">
         <div class="accordion-header">Certificates</div>
@@ -523,23 +541,24 @@
             if (selectedValue === 'land-id') {
                 inputFields.innerHTML = `
                     <label for="land-id">Land ID:</label>
-                    <input type="number" id="land-id" placeholder="Enter land ID">
+                    <input type="number" id="land-id" name="search_land_id" placeholder="Enter land ID">
                 `;
             } else if (selectedValue === 'owner-name') {
                 inputFields.innerHTML = `
                     <label for="owner-name">Owner Name:</label>
-                    <input type="text" id="owner-name" placeholder="Enter owner name">
+                    <input type="text" id="owner-name" name="search_land_owner" placeholder="Enter owner name">
                 `;
             } else if (selectedValue === 'type') {
                 inputFields.innerHTML = `
                     <label for="type">Type:</label>
-                    <input type="text" id="type" placeholder="Enter type">
+                    <input type="text" id="type" name="search_land_type" placeholder="Enter type">
                 `;
             }
-
+        
             // Show the input fields if any are added
             inputFields.style.display = inputFields.innerHTML ? 'block' : 'none';
-        }
+    }
+
         function certificateShowInputFields() {
             const attributeSelect = document.getElementById('certificate-attribute-select');
             const inputFields = document.getElementById('certificate-input-fields');
