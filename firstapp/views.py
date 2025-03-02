@@ -211,22 +211,53 @@ def panemp(request):
         c_data = cur.fetchall()
         # logging.debug(f"Query executed successfully. Retrieved {len(data)} records.")
 
+        if request.method == "POST":
+            search_land_id = request.POST.get("search_land_id", "").strip()
+            search_land_type = request.POST.get("search_land_type", "").strip()
+            search_land_owner = request.POST.get("search_land_owner", "").strip()
+        else:
+            search_land_id = ""
+            search_land_type = ""
+            search_land_owner = ""
+   
         # Fetch land-ownership data
+        # Base query (always applied)
         query = """
         SELECT 
             la.ID as land_id,
             la.type_l as land_type,
-            STRING_AGG(c.nm,', ') as list_of_owners
+            STRING_AGG(c.nm, ', ') as list_of_owners
         FROM land_acres la
-        LEFT JOIN land_ownership lo on la.ID=lo.land_id
-        LEFT JOIN citizens c on lo.citizen_id=c.ID
+        LEFT JOIN land_ownership lo ON la.ID = lo.land_id
+        LEFT JOIN citizens c ON lo.citizen_id = c.ID
         WHERE lo.to_date IS NULL
-        GROUP BY la.ID,la.type_l;
         """
-        # logging.debug(f"Executing query: {query}")
-        cur.execute(query)
+        query_params = []
+
+        # Append filters only if search parameters are provided.
+        if search_land_id:
+            query += " AND la.ID = %s"
+            query_params.append(int(search_land_id))
+        
+        if search_land_type:
+    # For an exact match on Land Type
+            query += " AND la.type_l = %s"
+            query_params.append(search_land_type)
+        
+        if search_land_owner:
+            # Filtering by Owner Name
+            query += " AND c.nm ILIKE %s"
+            query_params.append(f"%{search_land_owner}%")
+        
+        # Append GROUP BY clause
+        query += " GROUP BY la.ID, la.type_l;"
+
+        logging.debug(f"Executing query: {query} with params: {query_params}")
+        
+        cur.execute(query, query_params)
         l_data = cur.fetchall()
-        # logging.debug(f"Query executed successfully. Retrieved {len(data)} records.")
+
+
         # Fetch certificate  data
         query = """
         SELECT
@@ -351,13 +382,19 @@ def panemp(request):
         house_records = [{"sno": idx + 1, **dict(zip(house_column_names[1:], row))} for idx, row in enumerate(house_data)]
         # logging.debug(f"Processed records: {records}")  # Debugging Output
 
+        search_params = {
+            "search_land_id": search_land_id,
+            "search_land_type": search_land_type,
+            "search_land_owner": search_land_owner,
+        }
+
     except psycopg2.Error as e:
         error_message = f"Database error: {e}"
         logging.error(error_message)  # Log the error
         messages.error(request, error_message)
         records=[]
 
-    return render(request,"panchayat_employees.html",{"citizens_record":citizens_records,"land_records":land_records,"cer_records":cer_records,"tax_records":txn_records,"wel_records":wel_records,"sch_records":sch_records,"assets_records":ast_records,"house_records":house_records})
+    return render(request,"panchayat_employees.html",{"citizens_record":citizens_records,"land_records":land_records,"search_params": search_params,"cer_records":cer_records,"tax_records":txn_records,"wel_records":wel_records,"sch_records":sch_records,"assets_records":ast_records,"house_records":house_records})
 
 def addcitizen(request):
     logging.debug("addcitizen view called.")
