@@ -350,9 +350,22 @@ def village_dashboard(request):
     })
 
 def citizens(request):
+    if request.session.get("flag") != 1:
+        messages.error(request, "You must be logged in to add a citizen.")
+        return redirect("login")
+    
     return render(request,"citizens.html")
 
 def panemp(request):
+
+    if request.session.get("flag") != 1:
+        messages.error(request, "You must be logged in to add a citizen.")
+        return redirect("login")
+    
+    if request.session.get("user_type") != "panchayat_employees":
+        messages.error(request, "You must be logged in as Employee.")
+        return redirect("login")
+    
     try:
         # logging.debug("Connecting to the database...")
         conn = get_db_connection()
@@ -757,6 +770,10 @@ def addcitizen(request):
         messages.error(request, "You must be logged in to add a citizen.")
         return redirect("login")
     
+    if request.session.get("user_type") != "panchayat_employees":
+        messages.error(request, "You must be logged in as Employee.")
+        return redirect("login")
+    
     if request.method == "POST":
         name = request.POST.get("nm")
         gender = request.POST.get("gender")
@@ -826,6 +843,10 @@ def addland(request):
     # Check if the user is logged in (flag must be 1)
     if request.session.get("flag") != 1:
         messages.error(request, "You must be logged in to add a citizen.")
+        return redirect("login")
+    
+    if request.session.get("user_type") != "panchayat_employees":
+        messages.error(request, "You must be logged in as Employee.")
         return redirect("login")
     
     if request.method == "POST":
@@ -926,6 +947,10 @@ def issuecertificate(request):
         messages.error(request, "You must be logged in to add a citizen.")
         return redirect("login")
     
+    if request.session.get("user_type") != "panchayat_employees":
+        messages.error(request, "You must be logged in as Employee.")
+        return redirect("login")
+    
     if request.method == "POST":
         type_cer = request.POST.get("certificate_type")
         issue_date = date.today()
@@ -1005,6 +1030,10 @@ def enrolltoschemes(request):
     # Check if the user is logged in (flag must be 1)
     if request.session.get("flag") != 1:
         messages.error(request, "You must be logged in to add a citizen.")
+        return redirect("login")
+    
+    if request.session.get("user_type") != "panchayat_employees":
+        messages.error(request, "You must be logged in as Employee.")
         return redirect("login")
     
     if request.method == "POST":
@@ -1117,6 +1146,10 @@ def addschemes(request):
     # Check if the user is logged in (flag must be 1)
     if request.session.get("flag") != 1:
         messages.error(request, "You must be logged in to add a citizen.")
+        return redirect("login")
+    
+    if request.session.get("user_type") != "panchayat_employees":
+        messages.error(request, "You must be logged in as Employee.")
         return redirect("login")
     
     if request.method == "POST":
@@ -1243,6 +1276,10 @@ def addassets(request):
         messages.error(request, "You must be logged in to add a citizen.")
         return redirect("login")
     
+    if request.session.get("user_type") != "panchayat_employees":
+        messages.error(request, "You must be logged in as Employee.")
+        return redirect("login")
+    
     if request.method == "POST":
         name = request.POST.get("type_a")
         location = request.POST.get("locn")
@@ -1297,6 +1334,10 @@ def addhousehold(request):
     # Check if the user is logged in (flag must be 1)
     if request.session.get("flag") != 1:
         messages.error(request, "You must be logged in to add a citizen.")
+        return redirect("login")
+    
+    if request.session.get("user_type") != "panchayat_employees":
+        messages.error(request, "You must be logged in as Employee.")
         return redirect("login")
     
     if request.method == "POST":
@@ -1374,6 +1415,16 @@ def addhousehold(request):
     return render(request, "addhousehold.html")
 
 def updateCitizen(request):
+
+    # Check if the user is logged in (flag must be 1)
+    if request.session.get("flag") != 1:
+        messages.error(request, "You must be logged in to add a citizen.")
+        return redirect("login")
+    
+    if request.session.get("user_type") != "panchayat_employees":
+        messages.error(request, "You must be logged in as Employee.")
+        return redirect("login")
+    
     records = {}
     if request.method == "POST":
         # Get form data from POST request
@@ -1477,6 +1528,12 @@ def updateCitizen(request):
 
 
 def viewscheme(request):
+
+    # Check if the user is logged in (flag must be 1)
+    if request.session.get("flag") != 1:
+        messages.error(request, "You must be logged in to add a citizen.")
+        return redirect("login")
+    
     scheme_record = {}
 
     if request.method == "POST":
@@ -1580,6 +1637,16 @@ def viewscheme(request):
     return render(request, "viewscheme.html", {"scheme": scheme_record})
 
 def delete_scheme(request, scheme_id):
+
+     # Check if the user is logged in (flag must be 1)
+    if request.session.get("flag") != 1:
+        messages.error(request, "You must be logged in to add a citizen.")
+        return redirect("login")
+    
+    if request.session.get("user_type") != "panchayat_employees":
+        messages.error(request, "You must be logged in as Employee.")
+        return redirect("login")
+    
     try:
         logging.debug(f"Attempting to delete scheme with ID: {scheme_id}")
         
@@ -1609,6 +1676,16 @@ def delete_scheme(request, scheme_id):
         return redirect("panchayat_employees")  # Redirect even if error occurs
 
 def edit_asset(request):
+
+     # Check if the user is logged in (flag must be 1)
+    if request.session.get("flag") != 1:
+        messages.error(request, "You must be logged in to add a citizen.")
+        return redirect("login")
+    
+    if request.session.get("user_type") != "panchayat_employees":
+        messages.error(request, "You must be logged in as Employee.")
+        return redirect("login")
+    
     asset_data = {}
 
     if request.method == "POST":
@@ -1703,6 +1780,15 @@ def edit_asset(request):
     return render(request, "edit_asset.html", {"asset": asset_data})
 
 def delete_asset(request, asset_id):
+     # Check if the user is logged in (flag must be 1)
+    if request.session.get("flag") != 1:
+        messages.error(request, "You must be logged in to add a citizen.")
+        return redirect("login")
+    
+    if request.session.get("user_type") != "panchayat_employees":
+        messages.error(request, "You must be logged in as Employee.")
+        return redirect("login")
+    
     try:
         logging.debug(f"Marking asset ID {asset_id} as inactive and updating demolition date.")
 
@@ -1732,6 +1818,16 @@ def delete_asset(request, asset_id):
         return redirect("panchayat_employees")  # Redirect even if an error occurs
 
 def update_all_taxes(request):
+
+     # Check if the user is logged in (flag must be 1)
+    if request.session.get("flag") != 1:
+        messages.error(request, "You must be logged in to add a citizen.")
+        return redirect("login")
+    
+    if request.session.get("user_type") != "panchayat_employees":
+        messages.error(request, "You must be logged in as Employee.")
+        return redirect("login")
+    
     try:
         logging.debug("Updating all tax records.")
 
@@ -1796,6 +1892,16 @@ def update_all_taxes(request):
         return redirect("panchayat_employees")
 
 def enroll_eligible_members(request):
+
+     # Check if the user is logged in (flag must be 1)
+    if request.session.get("flag") != 1:
+        messages.error(request, "You must be logged in to add a citizen.")
+        return redirect("login")
+    
+    if request.session.get("user_type") != "panchayat_employees":
+        messages.error(request, "You must be logged in as Employee.")
+        return redirect("login")
+    
     try:
         logging.debug("Enrolling eligible citizens in welfare schemes.")
 
@@ -1916,6 +2022,11 @@ def citizenTaxes(request):
 
 
 def citizenPayments(request):
+     # Check if the user is logged in (flag must be 1)
+    if request.session.get("flag") != 1:
+        messages.error(request, "You must be logged in to add a citizen.")
+        return redirect("login")
+
     if request.method == "POST":
         amount = request.POST.get("amount")
         tax_id = request.POST.get("tax_id")  # Get tax_id from POST request
@@ -2025,7 +2136,7 @@ def mycertificates(request):
     return render(request, "mycertificates.html", {"records": records})
 
 def previousTransactions(request):
-
+    
     tax_id = request.GET.get("tax_id")
     logging.debug(f"TAX ID = {tax_id}")
 
@@ -2680,6 +2791,10 @@ def addGovtMonitor_admin(request):
         messages.error(request, "You must be logged in to add a citizen.")
         return redirect("login")
     
+    if request.session.get("user_type") != "Admin":
+        messages.error(request, "You must be logged in as Employee.")
+        return redirect("login")
+    
     if request.method == "POST":
         name = request.POST.get("nm")
         
@@ -2732,6 +2847,10 @@ def addemployee_admin(request):
     # Check if the user is logged in (flag must be 1)
     if request.session.get("flag") != 1:
         messages.error(request, "You must be logged in to add a citizen.")
+        return redirect("login")
+    
+    if request.session.get("user_type") != "Admin":
+        messages.error(request, "You must be logged in as Employee.")
         return redirect("login")
     
     if request.method == "POST":
@@ -2965,6 +3084,14 @@ def crop_history(request):
 
 
 def updateLand(request):
+    if request.session.get("flag") != 1:
+        messages.error(request, "You must be logged in to add a citizen.")
+        return redirect("login")
+    
+    if request.session.get("user_type") != "panchayat_employees":
+        messages.error(request, "You must be logged in as Employee.")
+        return redirect("login")
+    
     records = {}
     if request.method == "POST":
         # Get form data from POST request
@@ -3082,6 +3209,10 @@ def previousOwners(request):
 
     if request.session.get("flag") != 1:
         messages.error(request, "You are not logged in")
+        return redirect("login")
+    
+    if request.session.get("user_type") != "panchayat_employees":
+        messages.error(request, "You must be logged in as Employee.")
         return redirect("login")
 
     try:
