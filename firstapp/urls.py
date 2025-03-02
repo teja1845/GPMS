@@ -43,5 +43,6 @@ urlpatterns = [
      path('update_all_taxes/', views.update_all_taxes, name='update_all_taxes'),
      path('enroll_eligible_members/', views.enroll_eligible_members, name='enroll_eligible_members'),
      path('citizens/addcomplaints',views.addcomplaints,name='addcomplaints'),
+     path('addNotification',views.addNotification,name="addNotification")
 
 ]

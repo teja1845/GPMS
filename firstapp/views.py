@@ -158,13 +158,24 @@ def village_dashboard(request):
     population_records = []
     income_records = []
     expenditure_records = []
+    notifications=[]
 
     try:
         logging.debug("Connecting to the database...")
         conn = get_db_connection()
         cur = conn.cursor()
         logging.debug("Database connection established.")
-
+        n_query="""
+            SELECT dt,descriptn 
+            FROM notification
+            ORDER BY dt 
+            DESC LIMIT 3;
+        """
+        cur.execute(n_query)
+        n_data=cur.fetchall()
+        n_column_names=["date","txt"]
+        notifications=[dict(zip(n_column_names,row)) for row in n_data]
+        print(notifications)
         # Fetch Panchayat Employees data
         query = """
         SELECT c.nm, STRING_AGG(CAST(cm.mobile_no AS TEXT), ', ') AS mobile_numbers, pe.job_role 
@@ -346,7 +357,8 @@ def village_dashboard(request):
         "scheme_records": scheme_records, 
         "population_records": population_records, 
         "income_records": income_records, 
-        "expenditure_records": expenditure_records
+        "expenditure_records": expenditure_records,
+        "notifications":notifications,
     })
 
 def citizens(request):
@@ -767,6 +779,40 @@ def panemp(request):
         records=[]
 
     return render(request,"panchayat_employees.html",{"citizens_record":citizens_records,"land_records":land_records,"search_params": search_params,"cer_records":cer_records,"tax_records":txn_records,"wel_records":wel_records,"sch_records":sch_records,"assets_records":ast_records,"house_records":house_records,"complaints_records":complaints_records})
+
+def addNotification(request):
+    if request.method == "POST":
+        notification = request.POST.get("notification_id")
+        
+        # Debugging statement to log the received notification
+        logging.debug(f"Received notification: {notification}")
+
+        # Establish database connection
+        conn = get_db_connection()
+        cur = conn.cursor()
+
+        # Corrected SQL query
+        query = """
+            INSERT INTO notification(dt, descriptn)
+            VALUES (CURRENT_DATE, %s)
+        """
+        
+        try:
+            # Execute the query with the notification parameter
+            cur.execute(query, (notification,))  # Note the tuple for parameters
+            conn.commit()  # Commit the transaction
+            logging.debug("Notification added successfully.")
+        except Exception as e:
+            logging.error(f"Error adding notification: {e}")
+            conn.rollback()  # Rollback in case of error
+        finally:
+            cur.close()
+            conn.close()
+
+        return render(request, "addNotification.html")
+    else:
+        # Handle the case where the request is not POST
+        return render(request, "addNotification.html")
 
 def addcitizen(request):
     logging.debug("addcitizen view called.")
