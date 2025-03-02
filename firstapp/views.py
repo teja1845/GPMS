@@ -460,7 +460,12 @@ def addland(request):
                 if not cur.fetchone():
                     messages.error(request, "Invalid old_id reference.")
                     return redirect("addland")
-
+                # Update status of old land record to "deactivated"
+                cur.execute("UPDATE land_acres SET stat = %s WHERE id = %s;", ("Inactive", old_id))
+                
+                # Update to_date in land_ownership for the old land record
+                cur.execute("UPDATE land_ownership SET to_date = %s WHERE land_id = %s AND citizen_id = %s AND to_date IS NULL;", (from_date, old_id, owner_citizen_id))
+            
             cur.execute("SELECT COUNT(*) FROM citizens WHERE id = %s;", (owner_citizen_id,))
             if cur.fetchone()[0] == 0:
                 messages.error(request, "Owner Citizen ID does not exist.")
@@ -1079,6 +1084,139 @@ def updateCitizen(request):
             messages.error(request, f"Database error: {e}")
         
         return render(request, "updateCitizen.html", {"record": records})
+
+
+def viewscheme(request):
+    scheme_record = {}
+
+    if request.method == "POST":
+        # Fetch form data from POST request
+        scheme_id = request.POST.get("scheme_id")
+        name = request.POST.get("name")
+        age_range = request.POST.get("eligible_age_range")
+        gender = request.POST.get("eligible_gender")
+        occupation = request.POST.get("eligible_occupation")
+        # income = request.POST.get("eligible_income")
+        # land_area = request.POST.get("eligible_land_area")
+        # scheme_amt = request.POST.get("scheme_amt")
+        
+        income = float(request.POST.get("eligible_income", 0))
+        land_area = float(request.POST.get("eligible_land_area", 0))
+        scheme_amt = float(request.POST.get("scheme_amt", 0))
+
+
+        logging.debug(f"Received form data: {request.POST}")
+
+        if not all([name, age_range, gender, occupation, income, land_area, scheme_amt]):
+            messages.error(request, "All fields are required.")
+            return redirect("viewscheme")
+
+        try:
+            conn = get_db_connection()
+            cur = conn.cursor()
+            logging.debug("Database connection established for UPDATE.")
+
+            # Update query
+            update_query = """
+                UPDATE welfare_scheme 
+                SET nm = %s, eligible_age_range = %s, eligible_gender = %s, 
+                    eligible_occupation = %s, eligible_income = %s, 
+                    eligible_land_area = %s, scheme_amt = %s
+                WHERE scheme_id = %s;
+            """
+            cur.execute(update_query, (name, age_range, gender, occupation, income, land_area, scheme_amt, scheme_id))
+            conn.commit()
+
+            logging.debug(f"Database updated successfully for scheme_id: {scheme_id}.")
+            messages.success(request, "Scheme details updated successfully.")
+
+            # Close DB connection
+            cur.close()
+            conn.close()
+            logging.debug("Database connection closed after update.")
+
+            return redirect("panchayat_employees")  # Redirect after successful update
+
+        except psycopg2.Error as e:
+            logging.error(f"Database update error: {e}")
+            messages.error(request, f"Database error: {e}")
+
+    elif request.method == "GET":
+        scheme_id = request.GET.get("wel_id")
+        logging.debug(f"Scheme ID retrieved: {scheme_id}")
+
+        if not scheme_id:
+            messages.error(request, "Scheme ID not found in URL.")
+            logging.error("Scheme ID not found in URL.")
+            return render(request, "viewscheme.html", {"scheme": scheme_record})
+
+        try:
+            scheme_id = int(scheme_id)
+        except ValueError:
+            messages.error(request, "Invalid Scheme ID format.")
+            logging.error("Invalid Scheme ID format received.")
+            return render(request, "viewscheme.html", {"scheme": scheme_record})
+
+        try:
+            logging.debug("Connecting to the database for GET request...")
+            conn = get_db_connection()
+            cur = conn.cursor()
+
+            # Fetch existing scheme data
+            query = """
+                SELECT nm, eligible_age_range, eligible_gender, eligible_occupation, 
+                       eligible_income, eligible_land_area, scheme_amt
+                FROM welfare_scheme
+                WHERE scheme_id = %s;
+            """
+            logging.debug(f"Executing query: {query} with scheme_id: {scheme_id}")
+            cur.execute(query, (scheme_id,))
+            scheme_data = cur.fetchone()
+            logging.debug(f"Query executed successfully. Retrieved data: {scheme_data}")
+
+            if scheme_data:
+                columns = ["name", "eligible_age_range", "eligible_gender", "eligible_occupation",
+                           "eligible_income", "eligible_land_area", "scheme_amt"]
+                scheme_record = dict(zip(columns, scheme_data))
+
+            cur.close()
+            conn.close()
+            logging.debug("Database connection closed.")
+
+        except psycopg2.Error as e:
+            logging.error(f"Database fetch error: {e}")
+            messages.error(request, f"Database error: {e}")
+
+    return render(request, "viewscheme.html", {"scheme": scheme_record})
+
+def delete_scheme(request, scheme_id):
+    try:
+        logging.debug(f"Attempting to delete scheme with ID: {scheme_id}")
+        
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        # Delete related enrollments first (if applicable)
+        delete_enrollments_query = "DELETE FROM scheme_enrollment WHERE scheme_id = %s;"
+        cur.execute(delete_enrollments_query, (scheme_id,))
+        
+        # Delete the scheme itself
+        delete_scheme_query = "DELETE FROM welfare_scheme WHERE scheme_id = %s;"
+        cur.execute(delete_scheme_query, (scheme_id,))
+        
+        conn.commit()  # Save changes
+        logging.debug(f"Scheme with ID {scheme_id} deleted successfully.")
+
+        cur.close()
+        conn.close()
+        
+        messages.success(request, "Scheme deleted successfully.")
+        return redirect("panchayat_employees")  # Redirect to schemes list page
+
+    except psycopg2.Error as e:
+        logging.error(f"Database delete error: {e}")
+        messages.error(request, f"Error deleting scheme: {e}")
+        return redirect("panchayat_employees")  # Redirect even if error occurs
 
 
 # View to fetch citizen's taxes
