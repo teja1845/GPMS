@@ -37,6 +37,7 @@ urlpatterns = [
      path('updateLand/',views.updateLand,name="updateLand"),
      path('viewscheme/',views.viewscheme,name="viewscheme"),
      path("delete_scheme/<int:scheme_id>/", views.delete_scheme, name="delete_scheme"),
+     path('previousOwners/',views.previousOwners,name="previousOwners"),
      path('edit_asset/', views.edit_asset, name="edit_asset"),
      path("delete_asset/<int:asset_id>/", views.delete_asset, name="delete_asset"),
      path('update_all_taxes/', views.update_all_taxes, name='update_all_taxes'),

@@ -1646,7 +1646,7 @@ def land_records(request):
         JOIN land_acres la ON lo1.land_id = la.id
         LEFT JOIN land_ownership lo2 ON lo1.land_id = lo2.land_id AND lo1.citizen_id != lo2.citizen_id
         LEFT JOIN Citizens c2 ON lo2.citizen_id = c2.id
-        WHERE lo1.citizen_id = %s AND la.stat = 'Active'
+        WHERE lo1.citizen_id = %s AND la.stat = 'active'
         GROUP BY lo1.land_id, la.area_acres, la.type_l, lo1.citizen_id;
 
         """
@@ -2297,7 +2297,7 @@ def addemployee_admin(request):
 
             query = """
                 INSERT INTO panchayat_employees (citizen_id, job_role, salary, username, passwd, stat)
-                VALUES (%s, %s, %s, NULL, NULL,'Active');
+                VALUES (%s, %s, %s, NULL, NULL,'active');
             """
             
             values = (citizen_id, job_role, salary)
@@ -2622,6 +2622,68 @@ def updateLand(request):
             messages.error(request, f"Database error: {e}")
         
         return render(request, "updateLand.html", {"land": records})
+    
+
+def previousOwners(request):
+    land_id = request.GET.get("land_id")  
+    logging.debug(f"LAND ID = {land_id}")
+
+    if request.session.get("flag") != 1:
+        messages.error(request, "You are not logged in")
+        return redirect("login")
+
+    try:
+        logging.debug("Connecting to the database...")
+        conn = get_db_connection()
+        cur = conn.cursor()
+        logging.debug("Database connection established.")
+
+        records = []
+        current_land_id = land_id  
+
+        while current_land_id:
+            query = """
+            SELECT 
+             c.nm AS citizen_name,
+             lo.from_date, 
+             lo.to_date, 
+             la.old_id
+             FROM land_ownership AS lo
+             LEFT JOIN land_acres AS la ON lo.land_id = la.id
+             LEFT JOIN citizens AS c ON lo.citizen_id = c.id  
+             WHERE lo.land_id = %s;
+
+            """
+            logging.debug(f"Executing query for land_id: {current_land_id}")
+            cur.execute(query, (current_land_id,))
+            data = cur.fetchone() 
+
+            if not data :
+                break  
+
+            
+            records.append({
+                "citizen_name": data[0],
+                "from_date": data[1],
+                "to_date": data[2]
+            })
+
+            current_land_id = data[3] 
+            logging.debug(f"Moving to previous owner: {current_land_id}")
+
+        cur.close()
+        conn.close()
+        logging.debug("Database connection closed.")
+
+    except psycopg2.Error as e:
+        logging.error(f"Database error: {e}")
+        messages.error(request, f"Database error: {e}")
+        records = []
+
+    logging.debug(f"Processed records: {records}")
+    return render(request, "previousOwners.html", {"records": records})
+
+
 def logout(request):
     request.session["flag"] = 0
     return redirect("home")
