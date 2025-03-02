@@ -138,6 +138,7 @@
                     <label for="ctzn-attribute-select">Choose an attribute:</label>
                     <select id="ctzn-attribute-select" name="search_attribute" onchange="citizenShowInputFields()">
                         <option value="">--Select an attribute--</option>
+                        <option value="name"{% if search_params.search_citizen_name %}selected{% endif %}>Name</option>
                         <option value="dob" {% if search_params.search_citizen_dob_start or search_params.search_citizen_dob_end %}selected{% endif %}>Date of Birth</option>
                         <option value="gender" {% if search_params.search_citizen_gender %}selected{% endif %}>Gender</option>
                         <option value="category" {% if search_params.search_citizen_category %}selected{% endif %}>Category</option>
@@ -147,6 +148,9 @@
     
                     <div id="ctzn-input-fields" class="input-fields">
                         {% if search_params.search_citizen_dob_start or search_params.search_citizen_dob_end %}
+                            <label for="citizen-name">Name</label>
+                            <input type="text" id="citizen-name" name="search_citizen_name" value="{{ search_params.search_citizen_name }}">
+                        {% elif search_params.search_citizen_dob_start or search_params.search_citizen_dob_end %}
                             <label for="dob-start-date">Start Date:</label>
                             <input type="date" id="dob-start-date" name="search_citizen_dob_start" value="{{ search_params.search_citizen_dob_start }}">
                             <label for="dob-end-date">End Date:</label>
@@ -653,7 +657,13 @@
 
             const selectedValue = attributeSelect.value;
 
-            if (selectedValue === 'dob') {
+            if(selectedValue === 'name'){
+                inputFields.innerHTML=`
+                    <label for="citizen-name">Name</label>
+                    <input type="text" id="citizen-name" name="search_citizen_name" placeholder="Enter Name">
+                `;
+            }
+            else if (selectedValue === 'dob') {
                 inputFields.innerHTML = `
                     <label for="dob-start-date">Start Date:</label>
                     <input type="date" id="dob-start-date" name="search_citizen_dob_start">

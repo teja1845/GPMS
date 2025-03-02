@@ -373,6 +373,7 @@ def panemp(request):
         # logging.debug("Database connection established.")
 
         if request.method == "POST":
+            search_citizen_name = request.POST.get("search_citizen_name", "").strip()
             search_citizen_dob_start = request.POST.get("search_citizen_dob_start", "").strip()
             search_citizen_dob_end = request.POST.get("search_citizen_dob_end", "").strip()
             search_citizen_gender = request.POST.get("search_citizen_gender", "").strip()
@@ -381,6 +382,7 @@ def panemp(request):
             search_citizen_income_max = request.POST.get("search_citizen_income_max", "").strip()
             search_citizen_occupation = request.POST.get("search_citizen_occupation", "").strip()
         else:
+            search_citizen_name=""
             search_citizen_dob_start = ""
             search_citizen_dob_end = ""
             search_citizen_gender = ""
@@ -399,7 +401,10 @@ def panemp(request):
         query_params = []
 
         # Append filters based on search parameters
-        if search_citizen_dob_start and search_citizen_dob_end:
+        if search_citizen_name:
+            query+="AND nm ILIKE %s"
+            query_params.append(f"%{search_citizen_name}%")
+        elif search_citizen_dob_start and search_citizen_dob_end:
             query += " AND dob BETWEEN %s AND %s"
             query_params.append(search_citizen_dob_start)
             query_params.append(search_citizen_dob_end)
@@ -411,8 +416,8 @@ def panemp(request):
             query_params.append(search_citizen_dob_end)
 
         if search_citizen_gender:
-            query += " AND gender ILIKE %s"
-            query_params.append(f"%{search_citizen_gender}%")
+            query += " AND gender = %s"
+            query_params.append(search_citizen_gender)
 
         if search_citizen_category:
             query += " AND category ILIKE %s"  # Assuming 'category' is a column in the citizens table
@@ -745,6 +750,7 @@ def panemp(request):
             "search_certificate_end_date": search_certificate_end_date,
             "search_scheme_member": search_scheme_member,
             "search_scheme_name": search_scheme_name,
+            "search_citizen_name": search_citizen_name,
             "search_citizen_dob_start": search_citizen_dob_start,
             "search_citizen_dob_end": search_citizen_dob_end,
             "search_citizen_gender": search_citizen_gender,
