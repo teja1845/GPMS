@@ -28,7 +28,7 @@ def get_db_connection():
         dbname="22CS10009",
         user="22CS10009",
         password="22CS10009",
-        host="10.5.18.69",
+        host="10.145.216.117",
         port="5432"
     )
 
