@@ -7,6 +7,7 @@ from datetime import datetime
 from django.contrib.auth.hashers import make_password,check_password
 import logging
 from datetime import date
+from decimal import Decimal
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -28,7 +29,7 @@ def get_db_connection():
         dbname="22CS10009",
         user="22CS10009",
         password="22CS10009",
-        host="10.5.18.69",
+        host="10.145.216.117",
         port="5432"
     )
 
@@ -287,7 +288,8 @@ def panemp(request):
             a.ID AS asset_id,
             a.type_a AS asset_type,
             a.locn AS asset_location,
-            COALESCE(SUM(ae.amount_spent), 0) AS total_expenditure
+            COALESCE(SUM(ae.amount_spent), 0) AS total_expenditure,
+            a.stat AS asset_status
         FROM 
             assets a
         LEFT JOIN 
@@ -344,7 +346,7 @@ def panemp(request):
         sch_column_names=["sno","sch_id","sch_name","members"]
         sch_records = [{"sno": idx + 1, **dict(zip(sch_column_names[1:], row))} for idx, row in enumerate(sch_data)]
 
-        ast_column_names=["sno","ast_id","ast_name","loc","exp"]
+        ast_column_names=["sno","ast_id","ast_name","loc","exp","stat"]
         ast_records = [{"sno": idx + 1, **dict(zip(ast_column_names[1:], row))} for idx, row in enumerate(ast_data)]
         
         house_column_names=["sno","house_id","addr","income","members"]
@@ -1217,6 +1219,194 @@ def delete_scheme(request, scheme_id):
         logging.error(f"Database delete error: {e}")
         messages.error(request, f"Error deleting scheme: {e}")
         return redirect("panchayat_employees")  # Redirect even if error occurs
+
+def edit_asset(request):
+    asset_data = {}
+
+    if request.method == "POST":
+        asset_id = request.POST.get("asset_id")
+        amount_spent = request.POST.get("amount_spent")
+        spent_date = request.POST.get("spent_date")
+
+        logging.debug(f"Received form data: {request.POST}")
+
+        if not asset_id or not amount_spent or not spent_date:
+            messages.error(request, "All fields are required.")
+            return redirect("edit_asset")
+
+        try:
+            amount_spent = float(amount_spent)
+        except ValueError:
+            messages.error(request, "Invalid expenditure amount.")
+            return redirect("edit_asset")
+
+        try:
+            conn = get_db_connection()
+            cur = conn.cursor()
+            logging.debug("Database connection established.")
+
+            # Insert into assets_expenditure table
+            insert_query = """
+                INSERT INTO assets_expenditure (assetid, amount_spent, spent_date)
+                VALUES (%s, %s, %s);
+            """
+            cur.execute(insert_query, (asset_id, amount_spent, spent_date))
+            conn.commit()
+
+            logging.debug(f"Expenditure added for asset_id: {asset_id}.")
+            messages.success(request, "Expenditure added successfully.")
+
+            cur.close()
+            conn.close()
+            logging.debug("Database connection closed.")
+
+            return redirect("panchayat_employees")  # Redirect to asset list
+
+        except psycopg2.Error as e:
+            logging.error(f"Database error: {e}")
+            messages.error(request, f"Database error: {e}")
+
+    elif request.method == "GET":
+        asset_id = request.GET.get("asset_id")
+        logging.debug(f"Asset ID retrieved: {asset_id}")
+
+        if not asset_id:
+            messages.error(request, "Asset ID not found in URL.")
+            return render(request, "edit_asset.html", {"asset": asset_data})
+
+        try:
+            asset_id = int(asset_id)
+        except ValueError:
+            messages.error(request, "Invalid Asset ID format.")
+            return render(request, "edit_asset.html", {"asset": asset_data})
+
+        try:
+            conn = get_db_connection()
+            cur = conn.cursor()
+
+            # Fetch asset details
+            query = """
+                SELECT id, type_a, locn, installation_date, stat, demolition_date, scrap_cost
+                FROM assets
+                WHERE id = %s;
+            """
+            cur.execute(query, (asset_id,))
+            asset_row = cur.fetchone()
+
+            if asset_row:
+                columns = ["id", "type_a", "locn", "installation_date", "stat", "demolition_date", "scrap_cost"]
+                asset_data = dict(zip(columns, asset_row))
+
+                # Convert date fields to string format
+                if asset_data.get("installation_date"):
+                    asset_data["installation_date"] = asset_data["installation_date"].strftime("%Y-%m-%d")
+
+                if asset_data.get("demolition_date"):
+                    asset_data["demolition_date"] = asset_data["demolition_date"].strftime("%Y-%m-%d")
+
+
+            cur.close()
+            conn.close()
+
+        except psycopg2.Error as e:
+            logging.error(f"Database fetch error: {e}")
+            messages.error(request, f"Database error: {e}")
+
+    return render(request, "edit_asset.html", {"asset": asset_data})
+
+def delete_asset(request, asset_id):
+    try:
+        logging.debug(f"Marking asset ID {asset_id} as inactive and updating demolition date.")
+
+        conn = get_db_connection()
+        cur = conn.cursor()
+
+        # Update `demolition_date` to today and set `stat` to "inactive"
+        update_query = """
+        UPDATE assets 
+        SET demolition_date = %s, stat = 'inactive' 
+        WHERE id = %s;
+        """
+        cur.execute(update_query, (date.today(), asset_id))
+
+        conn.commit()  # Save changes
+        logging.debug(f"Asset ID {asset_id} updated successfully.")
+
+        cur.close()
+        conn.close()
+
+        messages.success(request, "Asset marked as inactive successfully.")
+        return redirect("panchayat_employees")  # Redirect to the asset list page
+
+    except psycopg2.Error as e:
+        logging.error(f"Database update error: {e}")
+        messages.error(request, f"Error updating asset: {e}")
+        return redirect("panchayat_employees")  # Redirect even if an error occurs
+
+def update_all_taxes(request):
+    try:
+        logging.debug("Updating all tax records.")
+
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        # Fetch all citizens with income
+        cur.execute("SELECT id, income FROM citizens")
+        citizens = cur.fetchall()
+
+        # Fetch land ownership details
+        cur.execute("""
+            SELECT lo.citizen_id, COALESCE(SUM(la.area_acres), 0) AS total_land_area
+            FROM land_ownership lo
+            JOIN land_acres la ON lo.land_id = la.id
+            WHERE lo.to_date IS NULL OR lo.to_date > CURRENT_DATE
+            GROUP BY lo.citizen_id
+        """)
+        land_ownership = dict(cur.fetchall())
+        
+        year = date.today().year
+        
+        for citizen_id, income in citizens:
+            # Calculate income tax
+            if income < 500000:
+                income_tax = 0
+            elif income > 1000000:
+                income_tax = income * Decimal('0.03')
+            else:
+                income_tax = income * Decimal('0.01')
+            
+            # Fetch land area for the citizen
+            land_area = land_ownership.get(citizen_id, 0)
+            land_tax = max(0, (land_area - 5) * 300)
+            
+            # Insert income tax record if applicable
+            if income_tax > 0:
+                cur.execute("""
+                    INSERT INTO payment_taxes (citizen_id, total_amount, due, yr, tax_type)
+                    VALUES (%s, %s, %s, %s, %s)
+                """, (citizen_id, income_tax, income_tax, year, 'Income Tax'))
+            
+            # Insert land tax record if applicable
+            if land_tax > 0:
+                cur.execute("""
+                    INSERT INTO payment_taxes (citizen_id, total_amount, due, yr, tax_type)
+                    VALUES (%s, %s, %s, %s, %s)
+                """, (citizen_id, land_tax, land_tax, year, 'Land Tax'))
+            
+        conn.commit()
+        logging.debug("All tax records updated successfully.")
+
+        cur.close()
+        conn.close()
+
+        messages.success(request, "All tax records updated successfully.")
+        return redirect("panchayat_employees")
+
+    except psycopg2.Error as e:
+        logging.error(f"Database update error: {e}")
+        messages.error(request, f"Error updating tax records: {e}")
+        return redirect("panchayat_employees")
+
 
 
 # View to fetch citizen's taxes

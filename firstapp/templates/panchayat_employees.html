@@ -59,6 +59,10 @@
         .button:hover {
             background-color: #45a049;
         }
+        .up{
+            width:25%;
+            text-align:center;
+        }
     </style>
 </head>
 <body>
@@ -203,7 +207,12 @@
                     {% endfor %}
                 </tbody>
             </table>
-            <button class="button">Update All</button>
+            <div class="button up">
+                <a href="{% url 'update_all_taxes' %}" style=" color: white; border: none; cursor: pointer; border-radius: 5px; text-decoration: none;margin:20px;">
+                    Update Taxes
+                 </a>
+            </div>
+            
         </div>
     </div>
 
@@ -255,16 +264,22 @@
                         <td>{{ record.sno }}</td>
                         <td>{{ record.wel_id }}</td>
                         <td>{{ record.wel_name }}</td>
-                        <td>
-                            <a href="{% url 'delete_scheme' record.wel_id %}" 
-                            style="background-color:rgb(248, 5, 5); color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px; text-decoration: none;">
-                            Delete
-                            </a>
+                        <td style="display: flex; gap: 10px; align-items: center;">
+
                             <button onclick="location.href='viewscheme/?wel_id={{ record.wel_id }}'" 
-                                style="background-color: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px; margin-top: 10px;">
+                                    style="background-color: #4CAF50; color: white; padding: 10px; border: none; 
+                                           cursor: pointer; border-radius: 5px;">
                                 View Scheme
                             </button>
-                        </td>
+
+                            <a href="{% url 'delete_scheme' record.wel_id %}" 
+                               style="background-color: rgb(248, 5, 5); color: white; padding: 10px; border: none; 
+                                      cursor: pointer; border-radius: 5px; text-decoration: none;">
+                                Delete
+                            </a>
+                        
+                            
+                        </td>                        
                     </tr>
                     {% endfor %}
                     <!-- Repeat for 4 more rows -->
@@ -286,6 +301,7 @@
                         <th>Asset Name</th>
                         <th>Location</th>
                         <th>Expenditure</th>
+                        <th>Status</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -297,9 +313,18 @@
                         <td>{{ record.ast_name }}</td>
                         <td>{{ record.loc }}</td>
                         <td>{{ record.exp }}</td>
-                        <td>
-                            <button style="background-color: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px; margin-top: 10px;">Edit</button>
-                            <button style="background-color: red; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px; margin-top: 10px;">Delete</button>
+                        <td>{{ record.stat }}</td>
+                        <td style="display: flex; flex-direction: column; gap: 10px;">
+                            <button onclick="location.href='edit_asset/?asset_id={{ record.ast_id }}'"
+                                    style="background-color: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px;">
+                                Edit Expenditure
+                            </button>
+
+                            <a href="{% url 'delete_asset' record.ast_id %}" 
+                                style="background-color: rgb(248, 5, 5); color: white; padding: 10px; border: none; cursor: pointer; border-radius: 4px; text-decoration: none;text-align:center;">
+                                Delete
+                            </a>
+
                         </td>
                     </tr>
                     {% endfor %}
@@ -342,7 +367,7 @@
 
 
     <button class="button" style="display: block; margin: 20px auto;" onclick="location.href='villagedashboard'">Village Dashboard</button>
-    <button class="button" style="display: block; margin: 20px auto;" >Update year data</button>
+    <button class="button" style="display: block; margin: 20px auto;" onclick="location.href='logout'">Logout</button>
     <script>
         // JavaScript for accordion functionality
         const accordions = document.querySelectorAll('.accordion-header');
