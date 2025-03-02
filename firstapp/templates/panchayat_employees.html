@@ -309,31 +309,47 @@
         </div>
 
     <div class="accordion">
-        <div class="accordion-header">Tax Dues</div>
+        <div class="accordion-header">Taxes</div>
         <div class="accordion-content">
             <div class="container">
-                <label for="due-attribute-select">Choose an attribute:</label>
-                <select id="due-attribute-select" onchange="dueShowInputFields()">
-                    <option value="">--Select an attribute--</option>
-                    <option value="type">Type</option>
-                    <option value="name">Name</option>
-                    <option value="due-amount">Due Amount</option>
-                </select>
-        
-                <div id="due-input-fields" class="input-fields"></div>
-                
-                <button class="submit-button" id="due-submit-button" onclick="submitForm()">Submit</button>
+                <form id="tax-search-form" method="POST" action="{% url 'panchayat_employees' %}">
+                    {% csrf_token %}
+                    <label for="tax-attribute-select">Choose an attribute:</label>
+                    <select id="tax-attribute-select" name="search_attribute" onchange="taxShowInputFields()">
+                        <option value="">--Select an attribute--</option>
+                        <option value="tax-id" {% if search_params.search_tax_id %}selected{% endif %}>Tax ID</option>
+                        <option value="citizen-name" {% if search_params.search_tax_citizen %}selected{% endif %}>Citizen Name</option>
+                        <option value="tax-type" {% if search_params.search_tax_type %}selected{% endif %}>Tax Type</option>
+                    </select>
+    
+                    <!-- Dynamic Input Fields -->
+                    <div id="tax-input-fields" class="input-fields">
+                        {% if search_params.search_tax_id %}
+                            <label for="tax-id">Tax ID:</label>
+                            <input type="number" id="tax-id" name="search_tax_id" placeholder="Enter tax ID" value="{{ search_params.search_tax_id }}">
+                        {% elif search_params.search_tax_citizen %}
+                            <label for="citizen-name">Citizen Name:</label>
+                            <input type="text" id="citizen-name" name="search_tax_citizen" placeholder="Enter citizen name" value="{{ search_params.search_tax_citizen }}">
+                        {% elif search_params.search_tax_type %}
+                            <label for="tax-type">Tax Type:</label>
+                            <input type="text" id="tax-type" name="search_tax_type" placeholder="Enter tax type" value="{{ search_params.search_tax_type }}">
+                        {% endif %}
+                    </div>
+    
+                    <button type="submit" class="submit-button" id="tax-submit-button">Submit</button>
+                </form>
             </div>
+    
+            <!-- Table to Display Tax Records -->
             <table>
                 <thead>
                     <tr>
                         <th>Sno</th>
-                        <th>TAX ID</th>
+                        <th>Tax ID</th>
                         <th>Citizen Name</th>
                         <th>Tax Type</th>
                         <th>Total Amount</th>
-                        <th>Due Amount</th>
-                        <th>Actions</th>
+                        <th>Due</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -345,25 +361,14 @@
                         <td>{{ record.tax_type }}</td>
                         <td>{{ record.total_amount }}</td>
                         <td>{{ record.due }}</td>
-                        <td>
-                            {% if record.due == 0 %}
-                                <button style="background-color: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px; margin-top: 10px;">Download</button>
-                            {% else %}
-                                <button onclick = "location.href ='citizens/paymentPage/?tax_id={{ record.tax_id }}'";  style="background-color: red; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px; margin-top: 10px;">Pay</button>
-                            {% endif %}
-                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
-            <div class="button up">
-                <a href="{% url 'update_all_taxes' %}" style=" color: white; border: none; cursor: pointer; border-radius: 5px; text-decoration: none;margin:20px;">
-                    Update Taxes
-                 </a>
-            </div>
-            
+            <button class="button" onclick="location.href='addtax'">Add New Tax Record</button>
         </div>
     </div>
+    
 
     <div class="accordion">
         <div class="accordion-header">Scheme Enrollment</div>
@@ -700,36 +705,34 @@
             // Show the input fields if any are added
             inputFields.style.display = inputFields.innerHTML ? 'block' : 'none';
         }
-
-        function dueShowInputFields() {
-            const attributeSelect = document.getElementById('due-attribute-select');
-            const inputFields = document.getElementById('due-input-fields');
+        function taxShowInputFields() {
+            const attributeSelect = document.getElementById('tax-attribute-select');
+            const inputFields = document.getElementById('tax-input-fields');
             inputFields.innerHTML = ''; // Clear previous input fields
-
+        
             const selectedValue = attributeSelect.value;
-
-            if (selectedValue === 'type') {
+        
+            if (selectedValue === 'tax-id') {
                 inputFields.innerHTML = `
-                    <label for="due-type">Type:</label>
-                    <input type="text" id="due-type" placeholder="Enter type">
+                    <label for="tax-id">Tax ID:</label>
+                    <input type="number" id="tax-id" name="search_tax_id" placeholder="Enter tax ID">
                 `;
-            } else if (selectedValue === 'name') {
+            } else if (selectedValue === 'citizen-name') {
                 inputFields.innerHTML = `
-                    <label for="due-name">Name:</label>
-                    <input type="text" id="due-name" placeholder="Enter name">
+                    <label for="citizen-name">Citizen Name:</label>
+                    <input type="text" id="citizen-name" name="search_tax_citizen" placeholder="Enter citizen name">
                 `;
-            } else if (selectedValue === 'due-amount') {
+            } else if (selectedValue === 'tax-type') {
                 inputFields.innerHTML = `
-                    <label for="min-amount">Minimum Amount:</label>
-                    <input type="number" id="min-amount" placeholder="Enter minimum amount">
-                    <label for="max-amount">Maximum Amount:</label>
-                    <input type="number" id="max-amount" placeholder="Enter maximum amount">
+                    <label for="tax-type">Tax Type:</label>
+                    <input type="text" id="tax-type" name="search_tax_type" placeholder="Enter tax type">
                 `;
             }
-
-            // Show the input fields if any are added
+        
+            // Show input fields only if one is selected
             inputFields.style.display = inputFields.innerHTML ? 'block' : 'none';
         }
+        
         function schemeShowInputFields() {
             const attributeSelect = document.getElementById('scheme-attribute-select');
             const inputFields = document.getElementById('scheme-input-fields');
