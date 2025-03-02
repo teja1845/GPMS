@@ -435,13 +435,48 @@ def panemp(request):
         # logging.debug(f"Query executed successfully. Retrieved {len(data)} records.")
 
         #query to taxes 
+        if request.method == "POST":
+            search_tax_id = request.POST.get("search_tax_id", "").strip()
+            search_tax_citizen = request.POST.get("search_tax_citizen", "").strip()
+            search_tax_type = request.POST.get("search_tax_type", "").strip()
+        else:
+            search_tax_id = ""
+            search_tax_citizen = ""
+            search_tax_type = ""
+        
+        # Base query for fetching tax records
         query = """
-        SELECT tax_id,citizen_id,c.nm,tax_type, total_amount, due
+        SELECT 
+            tax_id,
+            citizen_id,
+            c.nm AS citizen_name,
+            tax_type,
+            total_amount,
+            due
         FROM payment_taxes
-        JOIN citizens c on  c.id=payment_taxes.citizen_id;
+        JOIN citizens c ON c.id = payment_taxes.citizen_id
+        WHERE 1=1
         """
-        cur.execute(query)
+        query_params = []
+        
+        # Append filters only if search parameters are provided
+        if search_tax_id:
+            query += " AND tax_id = %s"
+            query_params.append(int(search_tax_id))
+        
+        if search_tax_citizen:
+            query += " AND c.nm ILIKE %s"
+            query_params.append(f"%{search_tax_citizen}%")
+        
+        if search_tax_type:
+            query += " AND tax_type = %s"
+            query_params.append(search_tax_type)
+        
+        # Execute query
+        logging.debug(f"Executing query: {query} with params: {query_params}")
+        cur.execute(query, query_params)
         txn_data = cur.fetchall()
+        
 
         #query to scheme members 
         query = """
@@ -2914,7 +2949,6 @@ def updateLand(request):
         
         return render(request, "updateLand.html", {"land": records})
     
-
 def previousOwners(request):
     land_id = request.GET.get("land_id")  
     logging.debug(f"LAND ID = {land_id}")
@@ -2931,40 +2965,44 @@ def previousOwners(request):
 
         records = []
         current_land_id = land_id  
-
+        
         while current_land_id:
             query = """
             SELECT 
-             c.nm AS citizen_name,
-             lo.from_date, 
-             lo.to_date, 
-             la.old_id
-             FROM land_ownership AS lo
-             LEFT JOIN land_acres AS la ON lo.land_id = la.id
-             LEFT JOIN citizens AS c ON lo.citizen_id = c.id  
-             WHERE lo.land_id = %s;
-
+                c.nm AS citizen_name,
+                lo.from_date, 
+                lo.to_date, 
+                la.old_id
+            FROM land_ownership AS lo
+            LEFT JOIN land_acres AS la ON lo.land_id = la.id
+            LEFT JOIN citizens AS c ON lo.citizen_id = c.id  
+            WHERE lo.land_id = %s;
             """
+            
             logging.debug(f"Executing query for land_id: {current_land_id}")
             cur.execute(query, (current_land_id,))
-            data = cur.fetchone() 
-
-            if not data :
+            data = cur.fetchall()  # Fetch all records for this land_id
+        
+            if not data:
                 break  
-
             
-            records.append({
-                "citizen_name": data[0],
-                "from_date": data[1],
-                "to_date": data[2]
-            })
-
-            current_land_id = data[3] 
-            logging.debug(f"Moving to previous owner: {current_land_id}")
-
+            for row in data:
+                records.append({
+                    "citizen_name": row[0],
+                    "from_date": row[1],
+                    "to_date": row[2]
+                })
+        
+                if row[3]:  # If old_id exists, move to it
+                    current_land_id = row[3]
+                    logging.debug(f"Moving to previous owner: {current_land_id}")
+                else:
+                    current_land_id = None  # Stop if there's no previous land_id
+        
         cur.close()
         conn.close()
-        logging.debug("Database connection closed.")
+        logging.debug(f"Processed records: {records}")
+
 
     except psycopg2.Error as e:
         logging.error(f"Database error: {e}")
