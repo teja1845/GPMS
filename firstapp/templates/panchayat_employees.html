@@ -508,6 +508,36 @@
         </div>
     </div>
 
+    <div class="accordion">
+        <div class="accordion-header">View Complaints</div>
+        <div class="accordion-content">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Sno</th>
+                        <th>Complaint ID</th>
+                        <th>Citizen ID</th>
+                        <th>Date</th>
+                        <th>description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in complaints_records %}
+                    <tr>
+                        <td>{{ record.sno }}</td>
+                        <td>{{ record.complaint_id }}</td>
+                        <td>{{ record.citizen_id }}</td>
+                        <td>{{ record.date }}</td>
+                        <td>{{ record.description }}</td>
+                    </tr>
+                    {% endfor %}
+                    <!-- Repeat for 4 more rows -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
 
     <button class="button" style="display: block; margin: 20px auto;" onclick="location.href='villagedashboard'">Village Dashboard</button>
     <button class="button" style="display: block; margin: 20px auto;" onclick="location.href='logout'">Logout</button>

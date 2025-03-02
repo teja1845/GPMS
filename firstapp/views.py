@@ -510,6 +510,13 @@ def panemp(request):
         cur.execute(query)
         house_data = cur.fetchall()
         
+        query = """
+        SELECT c.complaint_id, citizen_id, c.enrolled_date, c.description
+        FROM complaints c;
+        """
+        cur.execute(query)
+        complaints_data = cur.fetchall()
+        
         cur.close()
         conn.close()
         # logging.debug("Database connection closed.")
@@ -539,6 +546,9 @@ def panemp(request):
         
         house_column_names=["sno","house_id","addr","members"]
         house_records = [{"sno": idx + 1, **dict(zip(house_column_names[1:], row))} for idx, row in enumerate(house_data)]
+        
+        complaints_column_names=["sno","complaint_id","citizen_id","date","description"]
+        complaints_records = [{"sno": idx + 1, **dict(zip(complaints_column_names[1:], row))} for idx, row in enumerate(complaints_data)]
         # logging.debug(f"Processed records: {records}")  # Debugging Output
 
         search_params = {
@@ -553,7 +563,7 @@ def panemp(request):
         messages.error(request, error_message)
         records=[]
 
-    return render(request,"panchayat_employees.html",{"citizens_record":citizens_records,"land_records":land_records,"search_params": search_params,"cer_records":cer_records,"tax_records":txn_records,"wel_records":wel_records,"sch_records":sch_records,"assets_records":ast_records,"house_records":house_records})
+    return render(request,"panchayat_employees.html",{"citizens_record":citizens_records,"land_records":land_records,"search_params": search_params,"cer_records":cer_records,"tax_records":txn_records,"wel_records":wel_records,"sch_records":sch_records,"assets_records":ast_records,"house_records":house_records,"complaints_records":complaints_records})
 
 def addcitizen(request):
     logging.debug("addcitizen view called.")
