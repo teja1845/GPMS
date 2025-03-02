@@ -416,22 +416,62 @@ def panemp(request):
         cur.execute(query, query_params)
         l_data = cur.fetchall()
 
+        if request.method == "POST":
+            search_certificate_name = request.POST.get("search_certificate_name", "").strip()
+            search_certificate_type = request.POST.get("search_certificate_type", "").strip()
+            search_certificate_start_date = request.POST.get("search_certificate_start_date", "").strip()
+            search_certificate_end_date = request.POST.get("search_certificate_end_date", "").strip()
+        else:
+            search_certificate_name = ""
+            search_certificate_type = ""
+            search_certificate_start_date = ""
+            search_certificate_end_date = ""
 
-        # Fetch certificate  data
-        query = """
-        SELECT
-            cc.citizen_id,
-            ci.nm AS citizen_name,
-            cc.certificate_id,
-            c.type AS certificate_type,
-            c.issue_date
+    # Fetch certificate data
+    # Base query (always applied)
+        c_query = """
+        SELECT 
+            c.ID as c_id,
+            c.nm as c_name,
+            cer.certificate_id as cer_id,
+            cer.type as cer_type,
+            cer.issue_date as issue_date
         FROM citizen_certificate cc
-        JOIN certificates c ON cc.certificate_id = c.certificate_id
-        JOIN citizens ci ON cc.citizen_id = ci.ID;
+        JOIN citizens c ON cc.citizen_id = c.ID
+        JOIN certificates cer ON cc.certificate_id = cer.certificate_id
+        WHERE 1=1
         """
-        # logging.debug(f"Executing query: {query}")
-        cur.execute(query)
+
+        cer_query_params = []
+        # Append filters only if search parameters are provided.
+        if search_certificate_name:
+            c_query += " AND c.nm ILIKE %s"
+            cer_query_params.append(f"%{search_certificate_name}%")
+        if search_certificate_type:
+            # For an exact match on Certificate Type
+            c_query += " AND cer.type = %s"
+            cer_query_params.append(search_certificate_type)
+
+        if search_certificate_start_date and search_certificate_end_date:
+            # Filtering by Issue Date range
+            c_query += " AND cer.issue_date BETWEEN %s AND %s"
+            cer_query_params.append(search_certificate_start_date)
+            cer_query_params.append(search_certificate_end_date)
+        elif search_certificate_start_date:
+            # If only start date is provided
+            c_query += " AND cer.issue_date >= %s"
+            cer_query_params.append(search_certificate_start_date)
+        elif search_certificate_end_date:
+            # If only end date is provided
+            c_query += " AND cer.issue_date <= %s"
+        c_query+=";"
+        # Execute the query
+        logging.debug(f"Executing query: {c_query} with params: {cer_query_params}")
+        cur.execute(c_query, cer_query_params)
         cer_data = cur.fetchall()
+        # logging.debug(f"Executing query: {query}")
+        # cur.execute(query)
+        # cer_data = cur.fetchall()
         # logging.debug(f"Query executed successfully. Retrieved {len(data)} records.")
 
         #query to taxes 
@@ -577,6 +617,10 @@ def panemp(request):
             "search_land_owner": search_land_owner,
             "search_house_address": search_house_address,
             "search_house_members": search_house_members,
+            "search_certificate_name": search_certificate_name,
+            "search_certificate_type": search_certificate_type,
+            "search_certificate_start_date": search_certificate_start_date,
+            "search_certificate_end_date": search_certificate_end_date,
         }
 
     except psycopg2.Error as e:
