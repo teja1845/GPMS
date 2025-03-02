@@ -528,8 +528,8 @@ def panemp(request):
 
         if request.method == "POST": 
         # --- For Households: Get search parameters from the GET request ---
-            search_house_address = request.GET.get("search_house_address", "").strip()
-            search_house_members = request.GET.get("search_house_members", "").strip()
+            search_house_address = request.POST.get("search_house_address", "").strip()
+            search_house_members = request.POST.get("search_house_members", "").strip()
 
         else :
             search_house_address = ""
@@ -540,26 +540,21 @@ def panemp(request):
         SELECT
             h.ID AS household_id,
             h.addr AS address,
-            h.income AS household_income,
             STRING_AGG(c.nm, ', ') AS member_names
         FROM
             households h
         LEFT JOIN
             citizens c ON h.ID = c.household_id
-        GROUP BY
-            h.ID, h.addr, h.income
-        ORDER BY
-            h.ID;
 
         """
         house_query_params = []
         if search_house_address:
-            house_query += " AND h.addr ILIKE %s"
+            house_query += " WHERE  h.addr ILIKE %s"
             house_query_params.append(f"%{search_house_address}%")
         if search_house_members:
-            house_query += " AND c.nm ILIKE %s"
+            house_query += "WHERE  c.nm ILIKE %s"
             house_query_params.append(f"%{search_house_members}%")
-        # house_query += " GROUP BY h.ID, h.addr, h.income ORDER BY h.ID;"
+        house_query += " GROUP BY h.ID, h.addr, h.income ORDER BY h.ID;"
 
         logging.debug(f"Executing Households query: {house_query} with params: {house_query_params}")
         cur.execute(house_query, house_query_params)
