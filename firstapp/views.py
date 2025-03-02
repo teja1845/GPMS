@@ -491,24 +491,43 @@ def panemp(request):
         cur.execute(query)
         ast_data = cur.fetchall()
 
-        #query to assets 
-        query = """
-        SELECT 
-            h.ID AS household_id, 
-            h.addr AS address, 
-            h.income AS household_income, 
+        if request.method == "POST": 
+        # --- For Households: Get search parameters from the GET request ---
+            search_house_address = request.GET.get("search_house_address", "").strip()
+            search_house_members = request.GET.get("search_house_members", "").strip()
+
+        else :
+            search_house_address = ""
+            search_house_members = ""
+
+        # --- Build dynamic query for households ---
+        house_query = """
+        SELECT
+            h.ID AS household_id,
+            h.addr AS address,
+            h.income AS household_income,
             STRING_AGG(c.nm, ', ') AS member_names
-        FROM 
+        FROM
             households h
-        LEFT JOIN 
+        LEFT JOIN
             citizens c ON h.ID = c.household_id
-        GROUP BY 
+        GROUP BY
             h.ID, h.addr, h.income
-        ORDER BY 
+        ORDER BY
             h.ID;
 
         """
-        cur.execute(query)
+        house_query_params = []
+        if search_house_address:
+            house_query += " AND h.addr ILIKE %s"
+            house_query_params.append(f"%{search_house_address}%")
+        if search_house_members:
+            house_query += " AND c.nm ILIKE %s"
+            house_query_params.append(f"%{search_house_members}%")
+        # house_query += " GROUP BY h.ID, h.addr, h.income ORDER BY h.ID;"
+
+        logging.debug(f"Executing Households query: {house_query} with params: {house_query_params}")
+        cur.execute(house_query, house_query_params)
         house_data = cur.fetchall()
         
         cur.close()
@@ -546,6 +565,8 @@ def panemp(request):
             "search_land_id": search_land_id,
             "search_land_type": search_land_type,
             "search_land_owner": search_land_owner,
+            "search_house_address": search_house_address,
+            "search_house_members": search_house_members,
         }
 
     except psycopg2.Error as e:

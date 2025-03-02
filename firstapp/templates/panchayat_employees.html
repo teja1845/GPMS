@@ -177,13 +177,14 @@
         </div>
     </div>
 
-    <form id="land-search-form" method="POST" action="{% url 'panchayat_employees' %}">
-        {% csrf_token %}
+
         <div class="accordion">
             <div class="accordion-header">Lands</div>
             <div class="accordion-content">
                 <div class="container">
                     <!-- Dropdown for selecting which attribute to search by -->
+                    <form id="land-search-form" method="POST" action="{% url 'panchayat_employees' %}">
+                        {% csrf_token %}
                     <label for="land-attribute-select">Choose an attribute:</label>
                     <select id="land-attribute-select" name="search_attribute" onchange="landShowInputFields()">
                         <option value="">--Select an attribute--</option>
@@ -207,6 +208,7 @@
                     </div>
     
                     <button type="submit" class="submit-button" id="land-submit-button">Submit</button>
+                 </form>
                 </div>
                 
                 <!-- Your table displaying land records -->
@@ -238,7 +240,7 @@
                 <button class="button" onclick="location.href='addland'">Add New Lands</button>
             </div>
         </div>
-    </form>
+   
     
 
     <div class="accordion">
@@ -474,36 +476,70 @@
         </div>
     </div>
 
-    <div class="accordion">
-        <div class="accordion-header">Households</div>
-        <div class="accordion-content">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Sno</th>
-                        <th>Household ID</th>
-                        <th>Address</th>
-                        <th>Income</th>
-                        <th>Members</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for record in house_records %}
-                    <tr>
-                        <td>{{ record.sno }}</td>
-                        <td>{{ record.house_id }}</td>
-                        <td>{{ record.addr }}</td>
-                        <td>{{ record.income }}</td>
-                        <td>{{ record.members }}</td>
-                    </tr>
-                    {% endfor %}
-                    <!-- Repeat for 4 more rows -->
-                </tbody>
-            </table>
-            <button class="button" onclick="location.href='addhousehold'">Add Household</button>
+    
+        <div class="accordion">
+            <div class="accordion-header">Households</div>
+            <div class="accordion-content">
+                <div class="container">
+                    <!-- Dropdown for selecting which household attribute to search by -->
+                    <form id="house-search-form" method="POST" action="{% url 'panchayat_employees' %}">
+                        {% csrf_token %}
+                    <label for="house-attribute-select">Choose an attribute:</label>
+                    <select id="house-attribute-select" name="search_attribute" onchange="houseShowInputFields()">
+                        <option value="">--Select an attribute--</option>
+                        <option value="address" {% if search_params.search_house_address %}selected{% endif %}>Address</option>
+                        <option value="member" {% if search_params.search_house_member %}selected{% endif %}>Member Name</option>
+                    </select>
+    
+                    <!-- This container will hold the dynamic input field based on the dropdown selection -->
+                    <div id="house-input-fields" class="input-fields">
+                        {% if search_params.search_house_address %}
+                            <label for="address">Address:</label>
+                            <input type="text" id="address" name="search_house_address" placeholder="Enter address" value="{{ search_params.search_house_address }}">
+                        {% elif search_params.search_house_member %}
+                            <label for="member">Member Name:</label>
+                            <input type="text" id="member" name="search_house_member" placeholder="Enter member name" value="{{ search_params.search_house_member }}">
+                        {% endif %}
+                    </div>
+    
+                    <button type="submit" class="submit-button" id="house-submit-button">Submit</button>
+                </form>
+                </div>
+                
+                <!-- Table displaying household records -->
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Sno</th>
+                            <th>Household ID</th>
+                            <th>Address</th>
+                            <th>Income</th>
+                            <th>Members</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in house_records %}
+                        <tr>
+                            <td>{{ record.sno }}</td>
+                            <td>{{ record.house_id }}</td>
+                            <td>{{ record.addr }}</td>
+                            <td>{{ record.income }}</td>
+                            <td>{{ record.members }}</td>
+                            <td>
+                                <button onclick="location.href='updateHousehold/?house_id={{ record.house_id }}'" style="background-color: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px;">Update</button>
+                                <button onclick="location.href='previousHouseholds/?house_id={{ record.house_id }}'" style="background-color: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 5px;">Previous Records</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <button class="button" onclick="location.href='addhousehold'">Add Household</button>
+            </div>
         </div>
-    </div>
-
+    
+    
+    
 
     <button class="button" style="display: block; margin: 20px auto;" onclick="location.href='villagedashboard'">Village Dashboard</button>
     <button class="button" style="display: block; margin: 20px auto;" onclick="location.href='logout'">Logout</button>
@@ -664,6 +700,29 @@
             // Show the input fields if any are added
             inputFields.style.display = inputFields.innerHTML ? 'block' : 'none';
         }
+
+        function houseShowInputFields() {
+            const attributeSelect = document.getElementById('house-attribute-select');
+            const inputFields = document.getElementById('house-input-fields');
+            inputFields.innerHTML = ''; // Clear previous input fields
+
+            const selectedValue = attributeSelect.value;
+
+             if (selectedValue === 'address') {
+                inputFields.innerHTML = `
+                    <label for="address">Address:</label>
+                    <input type="text" id="address" name="search_house_address" placeholder="Enter address">
+                `;
+            } else if (selectedValue === 'member') {
+                inputFields.innerHTML = `
+                    <label for="member">Member Name:</label>
+                    <input type="text" id="member" name="search_house_member" placeholder="Enter member name">
+                `;
+            }
+            // Show the input fields if any are added
+            inputFields.style.display = inputFields.innerHTML ? 'block' : 'none';
+        }       
+
 
         function submitForm() {
             // You can add your form submission logic here
