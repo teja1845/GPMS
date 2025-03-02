@@ -429,32 +429,107 @@ def panemp(request):
         cur.execute(query, query_params)
         l_data = cur.fetchall()
 
+        if request.method == "POST":
+            search_certificate_name = request.POST.get("search_certificate_name", "").strip()
+            search_certificate_type = request.POST.get("search_certificate_type", "").strip()
+            search_certificate_start_date = request.POST.get("search_certificate_start_date", "").strip()
+            search_certificate_end_date = request.POST.get("search_certificate_end_date", "").strip()
+        else:
+            search_certificate_name = ""
+            search_certificate_type = ""
+            search_certificate_start_date = ""
+            search_certificate_end_date = ""
 
-        # Fetch certificate  data
-        query = """
-        SELECT
-            cc.citizen_id,
-            ci.nm AS citizen_name,
-            cc.certificate_id,
-            c.type AS certificate_type,
-            c.issue_date
+    # Fetch certificate data
+    # Base query (always applied)
+        c_query = """
+        SELECT 
+            c.ID as c_id,
+            c.nm as c_name,
+            cer.certificate_id as cer_id,
+            cer.type as cer_type,
+            cer.issue_date as issue_date
         FROM citizen_certificate cc
-        JOIN certificates c ON cc.certificate_id = c.certificate_id
-        JOIN citizens ci ON cc.citizen_id = ci.ID;
+        JOIN citizens c ON cc.citizen_id = c.ID
+        JOIN certificates cer ON cc.certificate_id = cer.certificate_id
+        WHERE 1=1
         """
-        # logging.debug(f"Executing query: {query}")
-        cur.execute(query)
+
+        cer_query_params = []
+        # Append filters only if search parameters are provided.
+        if search_certificate_name:
+            c_query += " AND c.nm ILIKE %s"
+            cer_query_params.append(f"%{search_certificate_name}%")
+        if search_certificate_type:
+            # For an exact match on Certificate Type
+            c_query += " AND cer.type = %s"
+            cer_query_params.append(search_certificate_type)
+
+        if search_certificate_start_date and search_certificate_end_date:
+            # Filtering by Issue Date range
+            c_query += " AND cer.issue_date BETWEEN %s AND %s"
+            cer_query_params.append(search_certificate_start_date)
+            cer_query_params.append(search_certificate_end_date)
+        elif search_certificate_start_date:
+            # If only start date is provided
+            c_query += " AND cer.issue_date >= %s"
+            cer_query_params.append(search_certificate_start_date)
+        elif search_certificate_end_date:
+            # If only end date is provided
+            c_query += " AND cer.issue_date <= %s"
+        c_query+=";"
+        # Execute the query
+        logging.debug(f"Executing query: {c_query} with params: {cer_query_params}")
+        cur.execute(c_query, cer_query_params)
         cer_data = cur.fetchall()
+        # logging.debug(f"Executing query: {query}")
+        # cur.execute(query)
+        # cer_data = cur.fetchall()
         # logging.debug(f"Query executed successfully. Retrieved {len(data)} records.")
 
         #query to taxes 
+        if request.method == "POST":
+            search_tax_id = request.POST.get("search_tax_id", "").strip()
+            search_tax_citizen = request.POST.get("search_tax_citizen", "").strip()
+            search_tax_type = request.POST.get("search_tax_type", "").strip()
+        else:
+            search_tax_id = ""
+            search_tax_citizen = ""
+            search_tax_type = ""
+        
+        # Base query for fetching tax records
         query = """
-        SELECT tax_id,citizen_id,c.nm,tax_type, total_amount, due
+        SELECT 
+            tax_id,
+            citizen_id,
+            c.nm AS citizen_name,
+            tax_type,
+            total_amount,
+            due
         FROM payment_taxes
-        JOIN citizens c on  c.id=payment_taxes.citizen_id;
+        JOIN citizens c ON c.id = payment_taxes.citizen_id
+        WHERE 1=1
         """
-        cur.execute(query)
+        query_params = []
+        
+        # Append filters only if search parameters are provided
+        if search_tax_id:
+            query += " AND tax_id = %s"
+            query_params.append(int(search_tax_id))
+        
+        if search_tax_citizen:
+            query += " AND c.nm ILIKE %s"
+            query_params.append(f"%{search_tax_citizen}%")
+        
+        if search_tax_type:
+            query += " AND tax_type = %s"
+            query_params.append(search_tax_type)
+        
+        # Execute query
+        logging.debug(f"Executing query: {query} with params: {query_params}")
+        cur.execute(query, query_params)
         txn_data = cur.fetchall()
+        
 
         #query to scheme members 
         query = """
@@ -585,6 +660,10 @@ def panemp(request):
             "search_land_owner": search_land_owner,
             "search_house_address": search_house_address,
             "search_house_members": search_house_members,
+            "search_certificate_name": search_certificate_name,
+            "search_certificate_type": search_certificate_type,
+            "search_certificate_start_date": search_certificate_start_date,
+            "search_certificate_end_date": search_certificate_end_date,
         }
 
     except psycopg2.Error as e:
@@ -3036,7 +3115,6 @@ def updateLand(request):
         
         return render(request, "updateLand.html", {"land": records})
     
-
 def previousOwners(request):
     land_id = request.GET.get("land_id")  
     logging.debug(f"LAND ID = {land_id}")
@@ -3057,40 +3135,44 @@ def previousOwners(request):
 
         records = []
         current_land_id = land_id  
-
+        
         while current_land_id:
             query = """
             SELECT 
-             c.nm AS citizen_name,
-             lo.from_date, 
-             lo.to_date, 
-             la.old_id
-             FROM land_ownership AS lo
-             LEFT JOIN land_acres AS la ON lo.land_id = la.id
-             LEFT JOIN citizens AS c ON lo.citizen_id = c.id  
-             WHERE lo.land_id = %s;
-
+                c.nm AS citizen_name,
+                lo.from_date, 
+                lo.to_date, 
+                la.old_id
+            FROM land_ownership AS lo
+            LEFT JOIN land_acres AS la ON lo.land_id = la.id
+            LEFT JOIN citizens AS c ON lo.citizen_id = c.id  
+            WHERE lo.land_id = %s;
             """
+            
             logging.debug(f"Executing query for land_id: {current_land_id}")
             cur.execute(query, (current_land_id,))
-            data = cur.fetchone() 
-
-            if not data :
+            data = cur.fetchall()  # Fetch all records for this land_id
+        
+            if not data:
                 break  
-
             
-            records.append({
-                "citizen_name": data[0],
-                "from_date": data[1],
-                "to_date": data[2]
-            })
-
-            current_land_id = data[3] 
-            logging.debug(f"Moving to previous owner: {current_land_id}")
-
+            for row in data:
+                records.append({
+                    "citizen_name": row[0],
+                    "from_date": row[1],
+                    "to_date": row[2]
+                })
+        
+                if row[3]:  # If old_id exists, move to it
+                    current_land_id = row[3]
+                    logging.debug(f"Moving to previous owner: {current_land_id}")
+                else:
+                    current_land_id = None  # Stop if there's no previous land_id
+        
         cur.close()
         conn.close()
-        logging.debug("Database connection closed.")
+        logging.debug(f"Processed records: {records}")
+
 
     except psycopg2.Error as e:
         logging.error(f"Database error: {e}")
