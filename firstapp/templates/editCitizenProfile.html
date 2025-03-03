@@ -4,16 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Profile</title>
+    <link rel="icon" type="image/x-icon" href="https://imgs.search.brave.com/3hNicgZJ3IuwDzZfer7CPYpB0iGGH_ZfowSpVttz_oo/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly90My5m/dGNkbi5uZXQvanBn/LzAzLzIxLzg1LzU4/LzM2MF9GXzMyMTg1/NTg0Ml9HOXJzMGhL/MFQ5b0ljYmlwTTRs/YlR1aEhLUkQ3clln/eS5qcGc">
     <style>
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f4;
             margin: 0;
             padding: 0;
-            display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
+            margin-left: 25%;
         }
         .form-container {
             background-color: white;
@@ -21,6 +22,8 @@
             border-radius: 5px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             width: 400px;
+            margin-left: 20%;
+            margin-top: 20px;
         }
         h2 {
             text-align: center;
@@ -33,7 +36,7 @@
             margin-bottom: 5px;
         }
         input {
-            width: 100%;
+            width: 90%;
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
@@ -49,6 +52,29 @@
         }
         button:hover {
             background-color: #45a049;
+        }
+        .btn {
+            display: inline-block; /* Makes the button inline */
+            margin-top: 20px; /* Adds some space around the button */
+            margin-left: 35%;
+        }
+
+        .btn a {
+            background-color: rgb(195, 30, 30); /* Green background */
+            color: white; /* White text */
+            padding: 10px 20px; /* Top and bottom padding, left and right padding */
+            text-align: center; /* Center the text */
+            text-decoration: none; /* Remove underline from link */
+            border-radius: 5px; /* Rounded corners */
+            transition: background-color 0.3s; /* Smooth transition for hover effect */
+        }
+
+        .btn a:hover {
+            background-color: red; /* Darker green on hover */
+        }
+
+        .btn a:active {
+            background-color: red; /* Even darker green when clicked */
         }
     </style>
 </head>
@@ -108,8 +134,8 @@
             <button type="submit">Save Changes</button>
         </form>
     </div>
-    <div>
-    <a href="{% url 'citizensProfile' %}" class="back-button">Back</a>
+    <div class="btn">
+        <a href="{% url 'citizensProfile' %}" >Back</a>
     </div>
 </body>
 </html>

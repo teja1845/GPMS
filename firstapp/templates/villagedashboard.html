@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Responsive Webpage with Scrolling Effect</title>
+    <title>Village Dashboard</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -15,7 +15,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background-color: #333;
+            background-color: #449847;
             color: white;
             padding: 10px 20px;
         }
@@ -24,14 +24,19 @@
             height: 40px;
             margin-right: 10px;
         }
+        .navbar .logo span{
+            font-size: 30px;
+            font-weight: 700;
+        }
 
         .nav-buttons button {
             margin-left: 10px;
             padding: 10px;
-            background-color: #555;
+            background-color: #4CAF50;
             color: white;
             border: none;
             cursor: pointer;
+            border-radius: 5px;
         }
 
         .notification-scrollbar {
@@ -78,6 +83,28 @@
             padding: 8px;
             text-align: left;
         }
+        .btn {
+            display: inline-block; /* Makes the button inline */
+            margin: 10px; /* Adds some space around the button */
+        }
+
+        .btn a {
+            background-color: rgb(195, 30, 30); /* Green background */
+            color: white; /* White text */
+            padding: 10px 20px; /* Top and bottom padding, left and right padding */
+            text-align: center; /* Center the text */
+            text-decoration: none; /* Remove underline from link */
+            border-radius: 5px; /* Rounded corners */
+            transition: background-color 0.3s; /* Smooth transition for hover effect */
+        }
+
+        .btn a:hover {
+            background-color: red; /* Darker green on hover */
+        }
+
+        .btn a:active {
+            background-color: red; /* Even darker green when clicked */
+        }
     </style>
 </head>
 <body>
@@ -86,11 +113,11 @@
     <nav class="navbar">
         <div class="logo">
             <img src="https://imgs.search.brave.com/3hNicgZJ3IuwDzZfer7CPYpB0iGGH_ZfowSpVttz_oo/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly90My5m/dGNkbi5uZXQvanBn/LzAzLzIxLzg1LzU4/LzM2MF9GXzMyMTg1/NTg0Ml9HOXJzMGhL/MFQ5b0ljYmlwTTRs/YlR1aEhLUkQ3clln/eS5qcGc" alt="Logo" />
-            <span>GPMS</span>
+            <span>Gram Panchayat Managment System</span>
         </div>
         <div class="nav-buttons">
-            <button>Home</button>
-            <button>Login</button>
+            <button onclick="location.href=' '">Home</button>
+            <button onclick="location.href='login'">Login</button>
         </div>
     </nav>
 

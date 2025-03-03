@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Update Welfare Scheme</title>
+    <link rel="icon" type="image/x-icon" href="https://imgs.search.brave.com/3hNicgZJ3IuwDzZfer7CPYpB0iGGH_ZfowSpVttz_oo/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly90My5m/dGNkbi5uZXQvanBn/LzAzLzIxLzg1LzU4/LzM2MF9GXzMyMTg1/NTg0Ml9HOXJzMGhL/MFQ5b0ljYmlwTTRs/YlR1aEhLUkQ3clln/eS5qcGc">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -93,8 +94,8 @@
             <input type="number" step="0.01" name="scheme_amt" value="{{ scheme.scheme_amt|default:'' }}" required>
 
             <button type="submit">Update Scheme</button>
-            <button id="bck" onclick="location.href='/panchayat_employees'">Back</button>
         </form>
+        <button id="bck" onclick="location.href='/panchayat_employees'">Back</button>
     {% else %}
         <p>No scheme data found.</p>
     {% endif %}

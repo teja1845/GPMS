@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Citizens Dashboard</title>
+    <link rel="icon" type="image/x-icon" href="https://imgs.search.brave.com/3hNicgZJ3IuwDzZfer7CPYpB0iGGH_ZfowSpVttz_oo/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly90My5m/dGNkbi5uZXQvanBn/LzAzLzIxLzg1LzU4/LzM2MF9GXzMyMTg1/NTg0Ml9HOXJzMGhL/MFQ5b0ljYmlwTTRs/YlR1aEhLUkQ3clln/eS5qcGc">
     <style>
         body {
             font-family: Arial, sans-serif;
-            background: linear-gradient(to right, #e3f2fd, #90caf9);
             margin: 0;
             padding: 0;
             display: flex;
@@ -16,7 +16,7 @@
             height: 100vh;
         }
         .container {
-            background: white;
+            background: #eee;
             padding: 30px;
             border-radius: 10px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
@@ -35,7 +35,7 @@
             gap: 15px;
         }
         .button {
-            background: #007bff;
+            background: #4CAF50;
             color: white;
             padding: 12px;
             text-align: center;
@@ -46,7 +46,13 @@
             box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.1);
         }
         .button:hover {
-            background: #0056b3;
+            background: #449847;
+        }
+        .logout{
+            background-color: red;
+        }
+        .logout:hover{
+            background-color: rgb(189, 2, 2);
         }
     </style>
 </head>
@@ -61,8 +67,8 @@
             <a href="citizens/tax_payments" class="button">Tax Payments</a>
             <a href="citizens/land_records" class="button">Land Records</a>
             <a href="villagedashboard" class="button">Village Dashboard</a>
-            <a href="citizens/addcomplaints" class="button">Complaints</a>
-            <a href="logout" class="button">Logout</a>
+            <a href="citizens/addcomplaints" class="button ">Complaints</a>
+            <a href="logout" class="button logout">Logout</a>
         </div>
     </div>
 

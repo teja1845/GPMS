@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Update Land Record</title>
+    <link rel="icon" type="image/x-icon" href="https://imgs.search.brave.com/3hNicgZJ3IuwDzZfer7CPYpB0iGGH_ZfowSpVttz_oo/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly90My5m/dGNkbi5uZXQvanBn/LzAzLzIxLzg1LzU4/LzM2MF9GXzMyMTg1/NTg0Ml9HOXJzMGhL/MFQ5b0ljYmlwTTRs/YlR1aEhLUkQ3clln/eS5qcGc">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -32,6 +33,7 @@
         }
         input[type="submit"] {
             padding: 10px 15px;
+            margin-left: 40%;
             background-color: #28a745;
             color: white;
             border: none;
@@ -40,6 +42,29 @@
         }
         input[type="submit"]:hover {
             background-color: #218838;
+        }
+        .btn {
+            display: inline-block; /* Makes the button inline */
+            margin-top: 20px;
+            margin-left: 40%;
+        }
+
+        .btn a {
+            background-color: rgb(195, 30, 30); /* Green background */
+            color: white; /* White text */
+            padding: 10px 20px; /* Top and bottom padding, left and right padding */
+            text-align: center; /* Center the text */
+            text-decoration: none; /* Remove underline from link */
+            border-radius: 5px; /* Rounded corners */
+            transition: background-color 0.3s; /* Smooth transition for hover effect */
+        }
+
+        .btn a:hover {
+            background-color: red; /* Darker green on hover */
+        }
+
+        .btn a:active {
+            background-color: red; /* Even darker green when clicked */
         }
     </style>
 </head>
@@ -61,7 +86,9 @@
 
         <input type="submit" value="Update">
     </form>
-    <a href= "{% url 'land_records' %}" class="btn-back">Back</a>
+    <div class="btn">
+        <a href= "{% url 'land_records' %}" class="btn-back">Back</a>
+    </div> 
 </div>
 
 </body>
