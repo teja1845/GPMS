@@ -57,9 +57,9 @@
             background-color: #45a049;
         }
         .back-btn {
-            width: 50%;
+            width: 100%;
+            margin-top:20px;
             background-color: red;
-            margin-left: 10px;
         }
         .back-btn:hover {
             background-color: rgb(215, 3, 3);
@@ -74,7 +74,7 @@
 <body>
     
     <div class="addctzn-container">
-        <h2>Add Govt Monitor details Details</h2>
+        <h2>Add Govt Monitor Details</h2>
         <form method="POST" action="{% url 'addGovtMonitor_admin' %}">
             {% csrf_token %}
             <div class="form-group">
@@ -86,7 +86,7 @@
                 <button type="submit">Add Government Monitor</button>
             </div>
         </form>
-        <button type="button" class="back-btn" onclick="location.href='Admin'">Back</button>
+        <button type="button" class="back-btn" onclick="location.href='/Admin'">Back</button>
     </div>
 </body>
 </html>
