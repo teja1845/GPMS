@@ -68,6 +68,7 @@
                     <th>Citizen Name</th>
                     <th>From date</th>
                     <th>To date</th>
+                    <th>Old Land ID</th>
                 </tr>
             </thead>
             <tbody>
@@ -76,6 +77,7 @@
                         <td>{{ record.citizen_name }}</td>
                         <td>{{ record.from_date }}</td>
                         <td>{% if record.to_date %}{{ record.to_date }}{% else %}Present{% endif %}</td>
+                        <td>{{ record.old_id }}</td>
 
                     </tr>
                 {% endfor %}
