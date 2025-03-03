@@ -2796,34 +2796,85 @@ def Admin(request):
         conn = get_db_connection()
         cur = conn.cursor()
         logging.debug("Database connection established.")
+    # Initialize empty lists for records
+        GM_data = []
+        PE_data = []
 
-        # Fetch revenue report
-        query = """
-        SELECT id,nm,stat
-        FROM govt_monitors
+        if request.method == 'POST':
+            # Search for Government Monitors
+            search_govt_monitors = request.POST.get('search_admin_govt_monitors', '').strip()
+            search_pan_employees = request.POST.get('search_admin_pan_employees', '').strip()
 
-        """
-        logging.debug(f"Executing query: {query}")
-        cur.execute(query)
-        govt_monitors_data = cur.fetchall()
-        logging.debug(f"Query executed successfully. Retrieved {len(govt_monitors_data)} records.")
+            # Fetch Government Monitors data based on search
+            with conn.cursor() as cur:
+                if search_govt_monitors:
+                    query = """
+                    SELECT id, nm AS name, stat AS status
+                    FROM govt_monitors
+                    WHERE nm ILIKE %s
+                    """
+                    logging.debug(f"Executing query for Govt Monitors: {query} with search term: {search_govt_monitors}")
+                    cur.execute(query, (f'%{search_govt_monitors}%',))
+                else:
+                    query = """
+                    SELECT id, nm AS name, stat AS status
+                    FROM govt_monitors
+                    """
+                    logging.debug(f"Executing query for Govt Monitors: {query}")
+                    cur.execute(query)
 
-        query = """
-        SELECT p.id,nm,job_role,stat
-        FROM panchayat_employees as p,citizens
-        WHERE p.citizen_id = citizens.id
+                GM_data = cur.fetchall()
+                logging.debug(f"Retrieved {len(GM_data)} records for Govt Monitors.")
 
-        """
-        # logging.debug(f"Executing query: {query}")
-        cur.execute(query)
-        panchayat_employees_data = cur.fetchall()
-        # logging.debug(f"Query executed successfully. Retrieved {len(data)} records.")
+            # Fetch Panchayat Employees data based on search
+            with conn.cursor() as cur:
+                if search_pan_employees:
+                    query = """
+                    SELECT p.id, nm AS name, job_role, stat AS status
+                    FROM panchayat_employees AS p
+                    JOIN citizens ON p.citizen_id = citizens.id
+                    WHERE citizens.nm ILIKE %s
+                    """
+                    logging.debug(f"Executing query for Panchayat Employees: {query} with search term: {search_pan_employees}")
+                    cur.execute(query, (f'%{search_pan_employees}%',))
+                else:
+                    query = """
+                    SELECT p.id, nm AS name, job_role, stat AS status
+                    FROM panchayat_employees AS p
+                    JOIN citizens ON p.citizen_id = citizens.id
+                    """
+                    logging.debug(f"Executing query for Panchayat Employees: {query}")
+                    cur.execute(query)
+
+                PE_data = cur.fetchall()
+                logging.debug(f"Retrieved {len(PE_data)} records for Panchayat Employees.")
+
+        else:
+            # If not a POST request, fetch all records
+            with conn.cursor() as cur:
+                # Fetch all Government Monitors
+                query = """
+                SELECT id, nm AS name, stat AS status
+                FROM govt_monitors
+                """
+                cur.execute(query)
+                GM_data = cur.fetchall()
+
+                # Fetch all Panchayat Employees
+                query = """
+                SELECT p.id, nm AS name, job_role, stat AS status
+                FROM panchayat_employees AS p
+                JOIN citizens ON p.citizen_id = citizens.id
+                """
+                cur.execute(query)
+                PE_data = cur.fetchall()
+
         
         GM_column_names = ["id","name","status"]
-        GM_records = [{"s_no": idx + 1, **dict(zip(GM_column_names, row))} for idx, row in enumerate(govt_monitors_data)]
+        GM_records = [{"s_no": idx + 1, **dict(zip(GM_column_names, row))} for idx, row in enumerate(GM_data)]
         
         PE_column_names = ["id","name","job_role","status"]
-        PE_records = [{"s_no": idx + 1, **dict(zip(PE_column_names, row))} for idx, row in enumerate(panchayat_employees_data)]
+        PE_records = [{"s_no": idx + 1, **dict(zip(PE_column_names, row))} for idx, row in enumerate(PE_data)]
        
     except psycopg2.Error as e:
         error_message = f"Database error: {e}"
