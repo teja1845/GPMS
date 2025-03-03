@@ -3351,7 +3351,8 @@ def previousOwners(request):
                 records.append({
                     "citizen_name": row[0],
                     "from_date": row[1],
-                    "to_date": row[2]
+                    "to_date": row[2],
+                    "old_id": row[3]
                 })
         
                 if row[3]:  # If old_id exists, move to it
